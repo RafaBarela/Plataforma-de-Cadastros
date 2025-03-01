@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="custom-title text-center mb-4">
+        Gerenciar Cadastros de <span>Famílias</span> e <span>Materiais</span>
+    </h1>
+
+    <div class="row">
+        <!-- Seção para Famílias -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Famílias</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('adicionar_familia') }}" method="POST">
+                        <div class="form-group">
+                            <label for="nome_familia">Nome da Família</label>
+                            <input type="text" class="form-control" id="nome_familia" name="nome_familia" placeholder="Digite o nome da família" required>
+                        </div>
+                        <button type="submit" class="btn btn-success mt-2">Adicionar Família</button>
+                    </form>
+
+                    <!-- Lista de Famílias -->
+                    <h6 class="mt-4">Famílias Existentes:</h6>
+                    <ul class="list-group">
+                        {% for familia in familias %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ familia.nome }}</span>
+                                <div class="d-flex">
+                                    <!-- Botão Editar -->
+                                    <form action="{{ url_for('editar_familia', id=familia.id) }}" method="GET" class="mr-2">
+                                        <button type="submit" class="btn btn-sm btn-primary">Editar</button>
+                                    </form>
+
+                                    <!-- Botão Excluir -->
+                                    <form action="{{ url_for('remover_familia', id=familia.id) }}" method="POST">
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta família?');">Excluir</button>
+                                    </form>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção para Materiais -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Materiais</h5>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('adicionar_material') }}" method="POST">
+                        <div class="form-group">
+                            <label for="descricao_material">Descrição do Material</label>
+                            <input type="text" class="form-control" id="descricao_material" name="descricao_material" placeholder="Digite a descrição do material" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="familia_id">Família</label>
+                            <select class="form-control" id="familia_id" name="familia_id" required>
+                                <option value="">Selecione uma família</option>
+                                {% for familia in familias %}
+                                    <option value="{{ familia.id }}">{{ familia.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success mt-2">Adicionar Material</button>
+                    </form>
+
+                    <!-- Lista de Materiais -->
+                    <h6 class="mt-4">Materiais Existentes:</h6>
+                    <ul class="list-group">
+                        {% for material in materiais %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ material.descricao }} <small class="text-muted">({{ material.familia.nome }})</small>
+                                <form action="{{ url_for('remover_material', id=material.id) }}" method="POST" class="ml-2">
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este material?');">Excluir</button>
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+    .custom-title {
+        font-size: 2.5rem; /* Tamanho do título */
+        font-weight: bold; /* Peso da fonte */
+        color: #000; /* Preto */
+        letter-spacing: 1px; /* Espaçamento entre letras */
+        text-transform: uppercase; /* Letras maiúsculas */
+        border-bottom: 3px solid #000; /* Linha embaixo do título */
+        display: inline-block; /* Para centralizar com o texto */
+        padding-bottom: 5px; /* Espaço entre texto e linha */
+    }
+
+    .custom-title span {
+        font-weight: 700; /* Negrito para palavras destacadas */
+        color: #4a86e8; /* Azul para os destaques */
+    }
+</style>
+
+
+{% endblock %}
+

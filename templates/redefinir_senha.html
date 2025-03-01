@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redefinir Senha</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background: #ffffff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        p {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+        label {
+            font-size: 0.9rem;
+            color: #333;
+            display: block;
+            text-align: left;
+            margin-bottom: 0.5rem;
+        }
+        input[type="password"] {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .footer {
+            margin-top: 1.5rem;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Redefinir Senha</h1>
+        <p>Escolha uma nova senha para a sua conta.</p>
+        <form method="POST">
+            <label for="senha">Nova senha:</label>
+            <input type="password" name="senha" id="senha" placeholder="Digite sua nova senha" minlength="6" required>
+            <small style="color: #666; display: block; margin-top: 0.5rem;">A senha deve ter no mínimo 6 caracteres.</small>
+            <button type="submit">Redefinir senha</button>
+        </form>
+        <div class="footer">Certifique-se de usar uma senha segura.</div>
+    </div>
+</body>
+</html>
+
+<script>
+    document.querySelector('form').addEventListener('submit', function(event) {
+        const senha = document.getElementById('senha').value;
+        if (senha.length < 6) {
+            event.preventDefault(); // Impede o envio do formulário
+            alert('A senha deve ter no mínimo 6 caracteres.');
+        }
+    });
+</script>

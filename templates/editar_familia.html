@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Editar Família</h1>
+
+    <form action="{{ url_for('editar_familia', id=familia.id) }}" method="POST">
+        <div class="form-group">
+            <label for="nome_familia">Nome da Família</label>
+            <input type="text" class="form-control" id="nome_familia" name="nome_familia" value="{{ familia.nome }}" required>
+        </div>
+        <button type="submit" class="btn btn-success">Salvar Alterações</button>
+        <a href="{{ url_for('gerenciar_cadastros') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

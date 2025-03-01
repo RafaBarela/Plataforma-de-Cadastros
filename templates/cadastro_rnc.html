@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="text-center mb-5 text-primary"><i class="fas fa-file-alt"></i> Cadastro de RNC</h1>
+
+    <form id="rncForm" method="POST" action="/cadastro_rnc">
+        <!-- Seção 1: Informações Gerais -->
+        <fieldset class="border rounded p-4 mb-4 shadow-sm bg-light">
+            <legend class="w-auto px-3 text-primary font-weight-bold">Informações Gerais</legend>
+            <div class="form-group">
+                <label for="projeto" class="font-weight-bold">Projeto <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="projeto" name="projeto" maxlength="100" placeholder="Informe o projeto" required>
+            </div>
+            <div class="form-group">
+                <label for="cliente" class="font-weight-bold">Cliente <span class="text-danger">*</span></label>
+                <select class="form-control" id="cliente" name="cliente" required>
+                    <option value="" disabled selected>Selecione um cliente</option>
+                    {% for cliente in clientes %}
+                    {% if cliente.ativo %}
+                    <option value="{{ cliente.id }}">{{ cliente.nome }}</option>
+                    {% endif %}
+                    {% endfor %}
+                    </select>
+            </div>
+
+             <div class="mb-3">
+                 <label for="centro_custo" class="form-label">Centro de Custo</label>
+                 <input type="number" class="form-control" id="centro_custo" name="centro_custo" placeholder="Insira o Centro de Custo" required>
+             </div>
+
+            <script>
+                document.getElementById("centro_custo").addEventListener("input", function () {
+                         if (this.value.length > 5) {
+                              this.value = this.value.slice(0, 5);
+                           }
+                       });
+            </script>
+
+        </fieldset>
+
+        <!-- Seção 2: Impactos -->
+        <fieldset class="border rounded p-4 mb-4 shadow-sm bg-light">
+            <legend class="w-auto px-3 text-primary font-weight-bold">Impactos</legend>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="impacto_produto" class="font-weight-bold">Impacto no Produto? <span class="text-danger">*</span></label>
+                    <select class="form-control" id="impacto_produto" name="impacto_produto" required>
+                        <option value="" disabled selected>Selecione...</option>
+                        <option value="Sim">Sim</option>
+                        <option value="Não">Não</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="impacto_entrega" class="font-weight-bold">Impactou em Atrasos na intrega? <span class="text-danger">*</span></label>
+                    <select class="form-control" id="impacto_entrega" name="impacto_entrega" required>
+                        <option value="" disabled selected>Selecione...</option>
+                        <option value="Sim">Sim</option>
+                        <option value="Não">Não</option>
+                    </select>
+                </div>
+            </div>
+           <div class="form-group">
+                <label for="impacto_financeiro" class="font-weight-bold">
+                    Impacto Financeiro <span class="text-danger">*</span>
+                </label>
+                <input type="text" step="0.01" class="form-control" id="impacto_financeiro"
+                       name="impacto_financeiro" oninput="formatCurrency(this)"
+                       placeholder="Ex.: 1.000,00" required>
+                <small id="impactoWarning" class="text-danger" style="display: none;">
+                    O valor máximo permitido é R$ 1.000.000,00
+                </small>
+            </div>
+            <div class="form-group">
+                <label for="impacto_percepcao" class="font-weight-bold">Impacto na Percepção do Cliente da Rise? <span class="text-danger">*</span></label>
+                <select class="form-control" id="impacto_percepcao" name="impacto_percepcao" required>
+                    <option value="" disabled selected>Selecione...</option>
+                    <option value="Sim">Sim</option>
+                    <option value="Não">Não</option>
+                </select>
+            </div>
+        </fieldset>
+
+        <!-- Seção 3: Informações Detalhadas -->
+        <fieldset class="border rounded p-4 mb-4 shadow-sm bg-light">
+            <legend class="w-auto px-3 text-primary font-weight-bold">Informações Detalhadas</legend>
+            <div class="form-group">
+                <label for="origem_setor" class="font-weight-bold">Origem do Setor <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="origem_setor" name="origem_setor" maxlength="50" placeholder="Informe o setor de origem" required>
+            </div>
+            {% if current_user.role == 'admin' %}
+                <div class="form-group">
+                    <label for="solicitante" class="font-weight-bold">Solicitante <span class="text-danger">*</span></label>
+                    <select class="form-control" id="solicitante" name="solicitante" required>
+                        <option value="">Selecione um solicitante</option>
+                        {% for usuario in usuarios %}
+                            <option value="{{ usuario.username }}">{{ usuario.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="plano_acao" class="font-weight-bold">Plano de Ação <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="plano_acao" name="plano_acao" rows="5" maxlength="5000" placeholder="Descreva o plano de ação" required></textarea>
+                </div>
+            {% endif %}
+            <div class="form-group">
+                <label for="descricao_nc" class="font-weight-bold">Descrição da Não Conformidade <span class="text-danger">*</span></label>
+                <textarea class="form-control" id="descricao_nc" name="descricao_nc" rows="5" maxlength="5000" placeholder="Descreva a não conformidade" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="oc" class="font-weight-bold">Número da OC <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="oc" name="oc" maxlength="50" placeholder="Informe a OC" required>
+            </div>
+            <div class="form-group">
+                <label for="tipo_problema" class="font-weight-bold">Tipo de Problema <span class="text-danger">*</span></label>
+                <select class="form-control" id="tipo_problema" name="tipo_problema_id" required>
+                    <option value="" disabled selected>Selecione</option>
+                    {% for problema in tipos_problema %}
+                    <option value="{{ problema.id }}">{{ problema.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </fieldset>
+
+        <!-- Botão de Submissão -->
+        <button type="button" id="submitButton" class="btn btn-primary btn-block btn-lg shadow-sm" disabled data-toggle="modal" data-target="#confirmationModal">
+            <i class="fas fa-check-circle"></i> Cadastrar
+        </button>
+    </form>
+</div>
+
+<!-- Modal de Confirmação -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="confirmationModalLabel"><i class="fas fa-exclamation-triangle"></i> Confirmação de Dados</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="confirmationForm">
+                    <!-- Os campos e valores serão adicionados dinamicamente aqui -->
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" id="confirmButton" class="btn btn-primary" disabled>Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('rncForm');
+        const submitButton = document.getElementById('submitButton');
+        const confirmationForm = document.getElementById('confirmationForm');
+        const confirmButton = document.getElementById('confirmButton');
+
+        // Função para verificar se todos os campos estão preenchidos
+        function checkFormValidity() {
+            submitButton.disabled = !form.checkValidity();
+        }
+
+        // Adiciona evento de input e change para todos os campos do formulário
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('input', checkFormValidity);
+            input.addEventListener('change', checkFormValidity);
+        });
+
+        // Verifica a validade inicial
+        checkFormValidity();
+
+        // Preenche o modal com os valores do formulário
+        submitButton.addEventListener('click', function () {
+            confirmationForm.innerHTML = '';
+            inputs.forEach(input => {
+                const value = input.tagName === 'SELECT'
+                    ? input.options[input.selectedIndex].text
+                    : input.value;
+                const label = form.querySelector(`label[for="${input.id}"]`).innerText;
+
+                if (value) {
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.classList.add('form-check-input');
+
+                    const labelElement = document.createElement('label');
+                    labelElement.classList.add('form-check-label');
+                    labelElement.innerHTML = `<strong>${label}:</strong> ${value}`;
+
+                    const div = document.createElement('div');
+                    div.classList.add('form-check', 'mb-2');
+                    div.appendChild(checkbox);
+                    div.appendChild(labelElement);
+
+                    confirmationForm.appendChild(div);
+
+                    checkbox.addEventListener('change', function () {
+                        const allChecked = Array.from(confirmationForm.querySelectorAll('input[type="checkbox"]')).every(cb => cb.checked);
+                        confirmButton.disabled = !allChecked;
+                    });
+                }
+            });
+
+            // Exibe o modal
+            $('#confirmationModal').modal('show');
+        });
+
+        // Ação do botão "Confirmar" no modal
+        confirmButton.addEventListener('click', function () {
+            $('#confirmationModal').modal('hide'); // Fecha o modal
+            form.submit(); // Envia o formulário principal
+        });
+    });
+
+    // Formata valores financeiros
+    function formatCurrency(input) {
+        let value = input.value.replace(/\D/g, ""); // Remove tudo que não for número
+        if (value) {
+            let numValue = parseFloat(value) / 100; // Ajusta casas decimais
+            if (numValue > 1000000) { // Verifica se ultrapassa R$ 1.000.000,00
+                document.getElementById("impactoWarning").style.display = "block";
+                input.value = "1.000.000,00"; // Define o valor máximo
+            } else {
+                document.getElementById("impactoWarning").style.display = "none";
+                let formatted = numValue.toFixed(2).replace(".", ","); // Formata decimal
+                input.value = formatted.replace(/\B(?=(\d{3})+(?!\d))/g, "."); // Formata milhar
+            }
+        } else {
+            input.value = "";
+        }
+    }
+</script>
+{% endblock %}

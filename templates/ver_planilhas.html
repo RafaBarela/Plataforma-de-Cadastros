@@ -1,0 +1,515 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container-fluid mt-5">
+    <h1 class="mb-4">Lista de Solicitações</h1>
+
+    <!-- Seção de Pesquisa e Filtro -->
+<div class="card p-4 mb-4" style="background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <h5 class="mb-4 text-center" style="font-family: 'Roboto', sans-serif; font-weight: 600; color: #333;">Pesquisa de Solicitações</h5>
+    <form method="POST" action="{{ url_for('ver_planilhas') }}">
+        <div class="row">
+            <!-- Primeira Coluna: Pesquisa e Família -->
+            <div class="col-md-4 mb-3">
+                <!-- Campo de Pesquisa -->
+                <input type="text" name="termo_pesquisa" class="form-control mb-3" placeholder="Pesquisar por Descrição, Solicitante, Projeto..." value="{{ termo_pesquisa }}" style="border-radius: 6px; border: 1px solid #ced4da; box-shadow: none;" onfocus="this.style.boxShadow='0 0 10px rgba(0, 123, 255, 0.5)';">
+
+                <!-- Filtro por Família -->
+                <select name="familia" class="form-control" style="border-radius: 6px;">
+                    <option value="">Todas as Famílias:</option>
+                    {% for id, nome in familias.items() %}
+                        <option value="{{ id }}" {% if id|string == familia_id %}selected{% endif %}>{{ nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Segunda Coluna: Datas -->
+            <div class="col-md-4 mb-3">
+                <!-- Campo de Data Inicial -->
+                <input type="text" name="data_inicial" class="form-control mb-3" placeholder="Data Inicial (DD/MM/AAAA)" value="{{ data_inicial }}" style="border-radius: 6px; border: 1px solid #ced4da; box-shadow: none;" onfocus="this.style.boxShadow='0 0 10px rgba(0, 123, 255, 0.5)';">
+
+                <!-- Campo de Data Final -->
+                <input type="text" name="data_final" class="form-control" placeholder="Data Final (DD/MM/AAAA)" value="{{ data_final }}" style="border-radius: 6px; border: 1px solid #ced4da; box-shadow: none;" onfocus="this.style.boxShadow='0 0 10px rgba(0, 123, 255, 0.5)';">
+            </div>
+
+            <!-- Terceira Coluna: Status e Projeto Fictício -->
+            <div class="col-md-4 mb-3">
+                <!-- Filtro de Status -->
+                <select name="status_filtro" class="form-control mb-3" style="border-radius: 6px;">
+                    <option value="">Filtrar por Status:</option>
+                    <option value="Aprovado" {% if status_filtro == 'Aprovado' %}selected{% endif %}>Aprovado</option>
+                    <option value="Rejeitado" {% if status_filtro == 'Rejeitado' %}selected{% endif %}>Rejeitado</option>
+                    <option value="Pendente" {% if status_filtro == 'Pendente' %}selected{% endif %}>Pendente</option>
+                </select>
+
+                <!-- Filtro de Projeto Fictício -->
+                <select name="projeto_ficticio_filtro" class="form-control" style="border-radius: 6px;">
+                    <option value="">Materiais Fictícios:</option>
+                    <option value="Sim" {% if projeto_ficticio_filtro == 'Sim' %}selected{% endif %}>Sim</option>
+                    <option value="Não" {% if projeto_ficticio_filtro == 'Não' %}selected{% endif %}>Não</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Botões de Filtro -->
+            <div class="col-md-12 text-md-right text-center">
+                <button class="btn btn-primary mr-2 px-4 py-2" type="submit" style="border-radius: 8px; box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);">
+                    <i class="fas fa-search"></i> Aplicar Filtro
+                </button>
+                <button class="btn btn-secondary px-4 py-2" type="submit" name="limpar_busca" value="1" style="border-radius: 8px; box-shadow: 0 0 8px rgba(108, 117, 125, 0.3);">
+                    <i class="fas fa-times"></i> Limpar Filtros
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+
+
+    <style>
+        .card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+        .form-control {
+            border: 1px solid #ced4da;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.25);
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+        }
+    </style>
+
+
+
+    <button class="btn btn-success mb-3" id="export-btn">Exportar Selecionados</button> <!-- Botão de Exportar -->
+
+    <div class="table-responsive">
+    <table class="table table-bordered table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col"><input type="checkbox" id="select-all"></th> <!-- Checkbox para selecionar todos -->
+                <th scope="col">Nº</th>
+                <th scope="col">Solicitante</th>
+                <th scope="col">Descrição Material</th>
+                <th scope="col">Família</th>
+                <th scope="col">Unidade</th>
+                <th scope="col">NCM</th>
+                <th scope="col">Projeto</th>
+                <th scope="col">Centro Custo</th>
+                <th scope="col">Cat.Produto</th>
+                <th scope="col">Data</th>
+                <th scope="col">Status</th>
+                <th scope="col" style="font-size: 16px;">Material Fictício</th>
+                <th scope="col" style="font-size: 16px;">Origem do Material</th>
+                <th scope="col" style="font-size: 16px;">Código</th>
+                {% if current_user.role == 'admin' %}
+                <th scope="col">Ação</th>  <!-- Coluna de Ação apenas para administradores -->
+                {% endif %}
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for planilha in planilhas %}
+            <tr>
+                <td><input type="checkbox" class="row-select"></td>
+                <td>{{ planilha.n_solicitacao }}</td> <!-- Corrigido para exibir o número da solicitação -->
+                <td>{{ planilha.solicitante }}</td>
+                <td>{{ planilha.descricao_material.upper() }}</td>
+                <td>{{ planilha.familia }}</td>
+                <td>{{ planilha.unidade_medida }}</td>
+                <td>{{ planilha.ncm }}</td>
+                <td>{{ planilha.projeto }}</td>
+                <td>{{ planilha.centro_custo }}</td>
+                <td>{{ planilha.cat_produto }}</td>
+                <td>{{ planilha.data_formatada }}</td><!-- Ajuste do formato de data -->
+                <td>
+                    {% if current_user.role == 'admin' and not planilha.is_locked %}
+                        <select class="form-control status-select" id="status_{{ planilha.id }}" onchange="checkFields({{ planilha.id }})">
+                            <option value="Pendente" {% if planilha.status == "Pendente" %}selected{% endif %}>Pendente</option>
+                            <option value="Aprovado" {% if planilha.status == "Aprovado" %}selected{% endif %}>Aprovado</option>
+                            <option value="Rejeitado" {% if planilha.status == "Rejeitado" %}selected{% endif %}>Rejeitado</option>
+                        </select>
+                    {% else %}
+                        {{ planilha.status }}
+                    {% endif %}
+                </td>
+                <td style="font-size: 16px;">{{ planilha.projeto_ficticio }}</td>
+                <td style="font-size: 16px;">{{ planilha.tipo_material }}</td>
+                <td>
+                    {% if current_user.role == 'admin' and not planilha.is_locked %}
+                        <input type="text" class="form-control code-input" id="codigo_{{ planilha.id }}" value="{{ planilha.codigo or '' }}" oninput="checkFields({{ planilha.id }})">
+                    {% else %}
+                        <span class="code-column">{{ planilha.codigo or 'Não atribuído' }}</span>
+                    {% endif %}
+                </td>
+                {% if current_user.role == 'admin' %}
+                <td>
+                    <button class="btn btn-primary save-btn" id="save_{{ planilha.id }}" onclick="atualizarPlanilha({{ planilha.id }})" disabled>Salvar</button>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+    <script>
+        // Função para verificar se o status é "Aprovado" e o campo código está preenchido
+        function checkFields(planilhaId) {
+            const statusElement = document.getElementById(`status_${planilhaId}`);
+            const codigoElement = document.getElementById(`codigo_${planilhaId}`);
+            const saveButton = document.getElementById(`save_${planilhaId}`);
+
+            const selectedStatus = statusElement.value;
+            const codigoValue = codigoElement ? codigoElement.value.trim() : '';
+
+            // Habilitar o botão se o status for 'Rejeitado' ou 'Aprovado' com código preenchido
+            if (selectedStatus === 'Rejeitado' || (selectedStatus === 'Aprovado' && codigoValue)) {
+                saveButton.disabled = false;
+            } else {
+                saveButton.disabled = true;
+            }
+        }
+    </script>
+
+        <!-- Modal para Motivo de Rejeição -->
+        <div id="rejectionModal" style="display: none;">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2>Motivo da Rejeição</h2>
+                <textarea id="rejectionReason" placeholder="Escreva o motivo da rejeição aqui..."></textarea>
+                <button onclick="sendRejectionReason()">Enviar Motivo</button>
+            </div>
+        </div>
+
+        <!-- Estilos para o modal -->
+        <style>
+            #rejectionModal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .modal-content {
+                background-color: #fff;
+                padding: 20px;
+                border-radius: 8px;
+                width: 300px;
+                text-align: center;
+            }
+            .close {
+                cursor: pointer;
+                float: right;
+                font-size: 20px;
+                color: red;
+            }
+    </style>
+
+<style>
+    .table {
+        font-size: 16px;  /* Mantendo a fonte original */
+        text-align: left;
+        width: 100%;  /* Faz a tabela ocupar toda a largura */
+    }
+
+    .table th, .table td {
+        padding: 10px;  /* Mantendo o padding original */
+        vertical-align: middle;
+    }
+
+    .thead-dark th {
+        background-color: #000000;
+        color: white;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #95b8b5;
+    }
+
+    table {
+        width: 100%; /* Ajusta o tamanho da tabela para 100% do container */
+        border-collapse: collapse; /* Remove os espaçamentos entre as bordas */
+    }
+
+    th, td {
+        text-align: center; /* Centraliza o conteúdo de cada célula */
+        padding: 8px; /* Adiciona um pouco de espaçamento interno nas células */
+    }
+
+    .table-bordered th, .table-bordered td {
+        border: 1px solid #dee2e6;
+    }
+
+    /* Cores alternadas para as linhas */
+    .table tbody tr:nth-child(odd) {
+        background-color: #ffffff;
+    }
+
+    .table tbody tr:nth-child(even) {
+        background-color: #dfdfdf;
+    }
+
+    /* Opacidade do fundo ao passar o mouse */
+    .table-hover tbody tr:hover {
+        background-color: #95b8b5;
+        color: black;
+    }
+
+    /* Diminuindo a fonte apenas na coluna 'Código' */
+    th:nth-child(11), td:nth-child(11) {  /* Coluna 11 é a coluna 'Código' */
+        font-size: 12px;  /* Tamanho da fonte menor para 'Código' */
+    }
+
+    /* Para estilos específicos nos valores da coluna 'Código' */
+    .code-column {
+        font-size: 16px; /* Força os valores exibidos a seguir o mesmo tamanho */
+
+
+    .table .code-column {
+        font-size: 1.2em; /* Aumente ou diminua conforme necessário */
+
+
+}
+
+</style>
+
+
+<script>
+    let planilhaIdGlobal = null;
+
+    function atualizarPlanilha(planilhaId) {
+        const statusElement = document.getElementById('status_' + planilhaId);
+        const codigoElement = document.getElementById('codigo_' + planilhaId);
+
+        const novoStatus = statusElement.value;
+        const novoCodigo = codigoElement ? codigoElement.value : ''; // Se o campo "Código" existir (para admins)
+
+        if (novoStatus === 'Aprovado' && !novoCodigo) {
+            alert('O código é obrigatório quando o status for Aprovado.');
+            return; // Não continua se o código estiver vazio
+        }
+        if (novoStatus === 'Rejeitado') {
+            planilhaIdGlobal = planilhaId; // Salva o ID da planilha para uso posterior
+            document.getElementById('rejectionModal').style.display = 'flex'; // Exibe o modal
+            return;
+        }
+
+        // Código de atualização caso não seja rejeição
+        enviarStatusAtualizado(planilhaId, novoStatus, novoCodigo);
+    }
+
+    function closeModal() {
+        document.getElementById('rejectionModal').style.display = 'none';
+    }
+
+    function sendRejectionReason() {
+        const motivoRejeicao = document.getElementById('rejectionReason').value;
+
+        if (!motivoRejeicao) {
+            alert('Por favor, insira o motivo da rejeição.');
+            return;
+        }
+
+        // Fecha o modal e limpa o campo
+        closeModal();
+        document.getElementById('rejectionReason').value = '';
+
+        // Envia o motivo da rejeição junto com o status e o código
+        enviarStatusAtualizado(planilhaIdGlobal, 'Rejeitado', '', motivoRejeicao);
+    }
+
+    function enviarStatusAtualizado(planilhaId, status, codigo = '', motivoRejeicao = '') {
+        fetch("{{ url_for('atualizar_status') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ planilha_id: planilhaId, status: status, codigo: codigo, motivo_rejeicao: motivoRejeicao })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.success);
+
+                // Desativar a linha após atualização para "Aprovado" ou "Rejeitado"
+                if (status === 'Aprovado' || status === 'Rejeitado') {
+                    desativarLinha(planilhaId); // Função para travar a linha após salvar
+                }
+            } else {
+                alert(data.error || 'Ocorreu um erro ao atualizar a planilha.');
+            }
+        })
+        .catch(error => console.error('Erro:', error));
+    }
+
+    function desativarLinha(planilhaId) {
+        const statusElement = document.getElementById('status_' + planilhaId);
+        const codigoElement = document.getElementById('codigo_' + planilhaId);
+        const saveButton = document.getElementById('save_' + planilhaId);
+
+        if (statusElement) {
+            statusElement.disabled = true; // Desativa o dropdown de status
+        }
+        if (codigoElement) {
+            codigoElement.setAttribute('readonly', true); // Define o campo de código como somente leitura
+        }
+        if (saveButton) {
+            saveButton.disabled = true; // Desativa o botão Salvar
+        }
+    }
+</script>
+
+
+
+
+<!-- Script para exportação e interações -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+<script>
+    document.getElementById('export-btn').addEventListener('click', function () {
+        const selectedRows = [];
+        const rows = document.querySelectorAll('tbody tr');
+
+        // Adiciona cabeçalhos das colunas
+        const headers = [
+            'Nº', // Número da Solicitação
+            'Solicitante',
+            'Descrição do Material',
+            'Família',
+            'Unidade', // Unidade de Medida
+            'NCM',
+            'Projeto',
+            'Data',
+            'Status',
+            'Material Fictício',
+            'Origem do Material',
+            'Código'
+        ];
+        selectedRows.push(headers);
+
+        rows.forEach(row => {
+            const checkbox = row.querySelector('.row-select');
+            if (checkbox.checked) {
+                const cells = row.querySelectorAll('td');
+                const rowData = [];
+
+                // Função para remover caracteres especiais e transformar em maiúsculas
+                function cleanText(text) {
+                    return text
+                        .toUpperCase() // Converte tudo para maiúsculas
+                        .normalize('NFD') // Normaliza caracteres acentuados
+                        .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+                        .replace(/[^A-Z0-9\s]/g, ''); // Remove caracteres especiais, exceto letras, números e espaços
+                }
+
+                rowData.push(cleanText(cells[1].innerText)); // Nº (Número da Solicitação)
+                rowData.push(cleanText(cells[2].innerText)); // Solicitante
+                rowData.push(cleanText(cells[3].innerText)); // Descrição Material
+                rowData.push(cleanText(cells[4].innerText)); // Família
+                rowData.push(cleanText(cells[5].innerText)); // Unidade (Unidade de Medida)
+                rowData.push(cleanText(cells[6].innerText)); // NCM
+                rowData.push(cleanText(cells[7].innerText)); // Projeto
+                rowData.push(cells[8].innerText); // Data (mantém o formato da célula)
+
+
+                // Captura o valor do Status (verifica se há um select na célula)
+                const statusCell = cells[9];
+                let statusValue;
+                const statusSelect = statusCell.querySelector('select'); // Verifica se existe um select
+                if (statusSelect) {
+                    statusValue = statusSelect.options[statusSelect.selectedIndex].text; // Obtém o texto do valor selecionado no dropdown
+                } else {
+                    statusValue = cleanText(statusCell.innerText); // Caso contrário, pega o texto direto da célula
+                }
+                rowData.push(statusValue); // Adiciona o valor correto do Status
+
+
+                rowData.push(cleanText(cells[10].innerText)); // Material Fictício
+                rowData.push(cleanText(cells[11].innerText)); // Origem do Material
+                rowData.push(cleanText(cells[12].innerText)); // Código
+
+                selectedRows.push(rowData);
+            }
+        });
+
+        if (selectedRows.length > 1) {
+            exportToExcel(selectedRows);
+        } else {
+            alert('Nenhuma linha selecionada para exportar!');
+        }
+    });
+
+    function exportToExcel(data) {
+        const worksheet = XLSX.utils.aoa_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Dados Selecionados');
+
+        XLSX.writeFile(workbook, 'dados_selecionados.xlsx');
+    }
+
+    // Seleciona ou desmarca todas as checkboxes
+    document.getElementById('select-all').addEventListener('change', function () {
+        const checkboxes = document.querySelectorAll('.row-select');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+    });
+
+
+    // Função para converter para horário de Brasília
+    function toBrasiliaTime(datetimeStr) {
+        const date = new Date(datetimeStr); // Cria um objeto Date a partir da string ISO
+        const options = {
+            timeZone: 'America/Sao_Paulo',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        };
+        // Formata a data usando o fuso horário de Brasília
+        return new Intl.DateTimeFormat('pt-BR', options).format(date);
+    }
+
+    // Aplica a conversão a todas as células com datas
+    document.querySelectorAll('td[data-datetime]').forEach(cell => {
+        const datetimeStr = cell.getAttribute('data-datetime');
+        cell.textContent = toBrasiliaTime(datetimeStr); // Substitui o conteúdo pelo horário convertido
+    });
+
+
+</script>
+
+
+{% endblock %}
+</div>

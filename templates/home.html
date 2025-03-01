@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+<!-- Hero Section -->
+<section class="hero bg-dark text-white py-5 text-center">
+    <div class="container">
+        <h1 class="display-4">Olá, Riser's! Sejam Bem-vindo ao nosso Sistema.</h1>
+        <p class="lead">Solicite o cadastro de produtos e visualize as informações de maneira prática e eficiente.</p>
+        <a href="{{ url_for('cadastro') }}" class="btn btn-light btn-lg mt-3">Solicite Agora</a>
+    </div>
+</section>
+
+<!-- Cards Section -->
+<section class="features py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <!-- Card 1 -->
+            <div class="col-md-5 mb-4 d-flex align-items-stretch">
+                <div class="card shadow-lg w-100 h-100 border-0" style="transition: transform 0.3s;">
+                    <div class="card-body text-center">
+                        <i class="bi bi-box-seam display-3 text-primary mb-3"></i>
+                        <h5 class="card-title font-weight-bold">Cadastro de Produtos</h5>
+                        <p class="card-text">Registre novos materiais ou serviços no sistema de forma fácil e rápida.</p>
+                        <a href="{{ url_for('cadastro') }}" class="btn btn-primary btn-lg rounded-pill">Solicitar</a>
+                    </div>
+                </div>
+            </div>
+            <!-- Card 2 -->
+            <div class="col-md-5 mb-4 d-flex align-items-stretch">
+                <div class="card shadow-lg w-100 h-100 border-0" style="transition: transform 0.3s;">
+                    <div class="card-body text-center">
+                        <i class="bi bi-list-check display-3 text-success mb-3"></i>
+                        <h5 class="card-title font-weight-bold">Visualizar Produtos</h5>
+                        <p class="card-text">Confira todos os produtos cadastrados em uma tabela organizada.</p>
+                        <a href="{{ url_for('ver_planilhas') }}" class="btn btn-success btn-lg rounded-pill">Visualizar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Inspiring Message Section -->
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-10 text-center animated-text">
+                <h3 class="text-muted">"Simplicidade e eficiência na gestão de seus produtos."</h3>
+                <p class="lead custom-text">Nosso sistema foi projetado para facilitar o seu dia a dia e garantir que todas as informações importantes estejam ao seu alcance.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-dark text-white py-3 mt-auto">
+    <div class="container text-center">
+        <p class="mb-0">© 2024 Sistema de Cadastro de Produtos. Todos os direitos reservados.</p>
+    </div>
+</footer>
+
+<!-- Internal CSS for Animations -->
+<style>
+    @keyframes fadeInOut {
+        0%, 100% { opacity: 0; }
+        50% { opacity: 1; }
+    }
+
+    .animated-text h3 {
+        animation: fadeInOut 4s ease-in-out infinite;
+        color: #222222 !important; /* Cor mais escura */
+    }
+
+    .animated-text p {
+        animation: fadeInOut 6s ease-in-out infinite;
+        color: #222222 !important; /* Cor mais escura */
+    }
+
+    /* Novo estilo para o parágrafo específico */
+    .custom-text {
+        color: #222222 !important; /* Cor mais escura */
+    }
+</style>
+
+
+
+
+
+{% endblock %}

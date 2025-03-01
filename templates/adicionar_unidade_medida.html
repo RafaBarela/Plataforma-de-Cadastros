@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container mt-5">
+    <h2>Adicionar Nova Unidade de Medida</h2>
+
+    <form method="POST" action="{{ url_for('adicionar_unidade_medida') }}">
+        <div class="form-group">
+            <label for="nova_unidade">Nome da Unidade de Medida</label>
+            <input type="text" class="form-control" id="nova_unidade" name="nova_unidade" placeholder="Ex: kg, m, etc." required>
+        </div>
+        <div class="form-group">
+            <label for="descricao_unidade">Descrição da Unidade de Medida</label>
+            <input type="text" class="form-control" id="descricao_unidade" name="descricao_unidade" placeholder="Ex: Quilograma, Metro, etc." required>
+        </div>
+        <button type="submit" class="btn btn-success">Adicionar</button>
+    </form>
+
+    <h3 class="mt-5">Unidades de Medida Existentes</h3>
+    <ul class="list-group">
+        {% for unidade in unidades %}
+            <li class="list-group-item">{{ unidade.nome }} ({{ unidade.descricao }})</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

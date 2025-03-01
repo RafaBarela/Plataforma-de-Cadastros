@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Lista de Clientes Cadastrados</h1>
+    <table class="table table-striped table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>Nº</th>
+                <th>Nome</th>
+                <th>CNPJ</th>
+                <th>Email</th>
+                <th>Data</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in clientes %}
+            <tr>
+                <td>{{ cliente.n_solicitacao }}</td>
+                <td>{{ cliente.nome }}</td>
+                <td>{{ cliente.cnpj }}</td>
+                <td>{{ cliente.email }}</td>
+                <td>{{ cliente.data_cadastro.strftime('%d/%m/%Y') }}</td>
+                <td>
+                    <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#detalhesModal{{ cliente.id }}">
+                        Detalhes
+                    </button>
+
+                    {% if cliente.status_cliente == 'Pendente' and current_user.role == 'admin' %}
+                    <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#aprovarModalCliente{{ cliente.id }}">
+                            Aprovar
+                    </button>
+                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejeitarModal{{ cliente.id }}">
+                        Rejeitar
+                    </button>
+                    {% endif %}
+                </td>
+            </tr>
+
+            <!-- Modal para exibir detalhes do Cliente -->
+            <div class="modal fade" id="detalhesModal{{ cliente.id }}" tabindex="-1" aria-labelledby="modalLabel{{ cliente.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalLabel{{ cliente.id }}">Detalhes do Cliente</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            {% with cliente_info = [
+                                ('Nome', cliente.nome),
+                                ('CNPJ', cliente.cnpj),
+                                ('Inscrição Estadual', cliente.inscricao_e),
+                                ('Regime Tributário', cliente.regime_tributario),
+                                ('Situação', cliente.situacao),
+                                ('É Fornecedor Também?', cliente.fornecedor_tambem),
+                                ('Email', cliente.email),
+                                ('Telefone', cliente.telefone),
+                                ('Atividade Principal', cliente.atividade_principal),
+                                ('Atividades Secundárias', cliente.atividades_secundarias),
+                                ('Endereço', cliente.logradouro ~ ', ' ~ cliente.numero ~ ' - ' ~ cliente.bairro ~ ', ' ~ cliente.municipio ~ ' - ' ~ cliente.uf ~ ', ' ~ cliente.complemento)
+                            ] %}
+                            {% for label, value in cliente_info %}
+                            <p><strong>{{ label }}:</strong> {{ value }}</p>
+                            {% endfor %}
+                            {% endwith %}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal de Rejeição -->
+            <div class="modal fade" id="rejeitarModal{{ cliente.id }}" tabindex="-1" role="dialog" aria-labelledby="rejeitarModalLabel{{ cliente.id }}" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <form action="{{ url_for('rejeitar_cliente', id=cliente.id) }}" method="post">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Motivo da Rejeição</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label for="motivo_rejeicao_{{ cliente.id }}">Informe o motivo:</label>
+                                    <textarea class="form-control" id="motivo_rejeicao_{{ cliente.id }}" name="motivo_rejeicao" rows="3" required></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-danger">Confirmar Rejeição</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal de aprovação -->
+                    <div class="modal fade" id="aprovarModalCliente{{ cliente.id }}" tabindex="-1" role="dialog" aria-labelledby="aprovarModalClienteLabel{{ cliente.id }}" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <form action="{{ url_for('aprovar_cliente', id=cliente.id) }}" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="aprovarModalClienteLabel{{ cliente.id }}">Código de Aprovação</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="form-group">
+                                            <label for="codigo_aprovacao{{ cliente.id }}">Informe o código:</label>
+                                            <input type="number" class="form-control" id="codigo_aprovacao{{ cliente.id }}" name="codigo_aprovacao" required>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                                        <button type="submit" class="btn btn-success">Confirmar Código</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

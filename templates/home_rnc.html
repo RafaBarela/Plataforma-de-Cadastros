@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="text-center">
+        <h1 class="display-4">Bem-vindo ao Sistema de Cadastro de RNC</h1>
+        <p class="lead">Gerencie e registre Relatórios de Não Conformidade de forma eficiente.</p>
+    </div>
+
+    <div class="row mt-5 justify-content-center">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-primary">Cadastrar RNC</h5>
+                    <p class="card-text">Registre uma nova ocorrência de não conformidade.</p>
+                    <a href="{{ url_for('cadastro_rnc') }}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-2"></i>Cadastrar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-secondary">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-secondary">Visualizar RNC's</h5>
+                    <p class="card-text">Consulte todos os relatórios cadastrados.</p>
+                    <a href="{{ url_for('listar_rnc') }}" class="btn btn-secondary">
+                        <i class="fas fa-list me-2"></i>Visualizar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-success">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-success">Relatórios</h5>
+                    <p class="card-text">Utilize esses relatórios para análise de dados.</p>
+                    <a href="{{ url_for('relatorios') }}" class="btn btn-success">
+                        <i class="fas fa-chart-pie me-2"></i>Ver Relatórios
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pergunta sobre o tema -->
+    <div class="text-center mt-5">
+        <p class="lead">Você prefere a página no modo escuro?</p>
+        <button id="theme-toggle" class="btn btn-outline-dark">Modo Escuro</button>
+    </div>
+</div>
+
+<script>
+    const button = document.getElementById('theme-toggle');
+    button.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        button.textContent = document.body.classList.contains('dark-mode') ? 'Modo Claro' : 'Modo Escuro';
+    });
+</script>
+
+<!-- Font Awesome (CDN) -->
+<link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    rel="stylesheet"
+/>
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+
+    .card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn {
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+    }
+
+    body.dark-mode {
+        background-color: #121212;
+        color: #ffffff;
+    }
+
+    body.dark-mode .card {
+        background-color: #1f1f1f;
+        border-color: #343a40;
+    }
+
+    body.dark-mode a {
+        color: #ffffff;
+    }
+
+    body.dark-mode .btn-outline-dark {
+        background-color: #ffffff;
+        color: #121212;
+    }
+
+    body.dark-mode .btn-outline-dark:hover {
+        background-color: #f8f9fa;
+        color: #121212;
+    }
+</style>
+{% endblock %}

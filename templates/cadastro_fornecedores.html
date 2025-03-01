@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Fornecedor</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <a href="{{ url_for('home_fornecedores') }}" class="text-decoration-none">
+                <i class="bi bi-house-door h2 text-primary"></i>
+            </a>
+        </div>
+        <div class="card shadow-lg rounded">
+            <div class="container">
+            {% with mensagens = get_flashed_messages(with_categories=True) %}
+                {% if mensagens %}
+                    {% for categoria, mensagem in mensagens %}
+                        <div class="alert {{ categoria }}">
+                            {{ mensagem }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            </div>
+            <div class="card-header bg-primary text-white text-center">
+                <h3>Cadastrar Fornecedor</h3>
+            </div>
+            <div class="card-body">
+                <form id="form-fornecedor" method="POST" action="{{ url_for('cadastro_fornecedores') }}" enctype="multipart/form-data">
+                    <!-- Dados Cadastrais -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="float-none w-auto px-3">Dados Cadastrais</legend>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="cnpj" class="form-label">CNPJ:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="cnpj" id="cnpj" placeholder="Digite o CNPJ" required>
+                                    <button type="button" id="btn-consultar-cnpj" class="btn btn-secondary">Consultar</button>
+                                    <button type="button" id="btn-limpar" class="btn btn-danger px-3">Limpar</button>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="situacao" class="form-label">Situação:</label>
+                                <input type="text" class="form-control" name="situacao" id="situacao" placeholder="Situação cadastral" readonly>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="abertura" class="form-label">Data de Abertura:</label>
+                            <input type="text" class="form-control" name="abertura" id="abertura" placeholder="Data de abertura" readonly>
+                        </div>
+                    </fieldset>
+
+                    <!-- Informações do Fornecedor -->
+                    <fieldset class="border p-4 mb-4 rounded shadow-sm bg-light">
+                        <legend class="float-none w-auto px-3 fw-bold text-primary">
+                            <i class="fas fa-truck"></i> Informações do Fornecedor
+                        </legend>
+                        <div class="mb-3">
+                            <label for="nome" class="form-label">
+                                <i class="fas fa-building"></i> Razão Social:
+                            </label>
+                            <input type="text" class="form-control" name="nome" id="nome" placeholder="Nome do fornecedor" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="nome_fantasia" class="form-label">
+                                <i class="fas fa-tag"></i> Nome Fantasia:
+                            </label>
+                            <input type="text" class="form-control" name="nome_fantasia" id="nome_fantasia" placeholder="Nome Fantasia" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="atividade_principal" class="form-label">
+                                <i class="fas fa-briefcase"></i> Atividade Principal:
+                            </label>
+                            <textarea class="form-control" name="atividade_principal" id="atividade_principal" rows="2" placeholder="Descrição da atividade principal" readonly></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="atividades_secundarias" class="form-label">
+                                <i class="fas fa-tasks"></i> Atividades Secundárias:
+                            </label>
+                            <textarea class="form-control" name="atividades_secundarias" id="atividades_secundarias" rows="3" placeholder="Descrição das atividades secundárias" readonly></textarea>
+                        </div>
+                    </fieldset>
+
+                    <!-- Adicionando FontAwesome para os ícones -->
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+                    <!-- Informações Fiscais -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="float-none w-auto px-3">Informações Fiscais</legend>
+                        <div class="mb-3">
+                            <label for="inscricao_e" class="form-label">Inscrição Estadual:</label>
+                            <input type="text" class="form-control" name="inscricao_e" id="inscricao_e" maxlength="9" placeholder="Inscrição Estadual"  readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="regime_tributario" class="form-label">Regime Tributário:</label>
+                            <input type="text" class="form-control" name="regime_tributario" id="regime_tributario" maxlength="7" placeholder="Regime Tributário" readonly>
+                        </div>
+                    </fieldset>
+
+                    <!-- Endereço -->
+                    <fieldset class="border p-4 mb-4 rounded shadow-sm bg-light">
+                        <legend class="float-none w-auto px-3 fw-bold text-primary">
+                            <i class="fas fa-map-marker-alt"></i> Endereço
+                        </legend>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="logradouro" class="form-label">
+                                    <i class="fas fa-road"></i> Logradouro:
+                                </label>
+                                <input type="text" class="form-control" name="logradouro" id="logradouro" placeholder="Rua, avenida, etc." readonly>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="numero" class="form-label">
+                                    <i class="fas fa-hashtag"></i> Número:
+                                </label>
+                                <input type="text" class="form-control" name="numero" id="numero" placeholder="Número" readonly>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="complemento" class="form-label">
+                                    <i class="fas fa-building"></i> Complemento:
+                                </label>
+                                <input type="text" class="form-control" name="complemento" id="complemento" placeholder="Apto, bloco, etc." readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="municipio" class="form-label">
+                                    <i class="fas fa-city"></i> Município:
+                                </label>
+                                <input type="text" class="form-control" name="municipio" id="municipio" placeholder="Cidade" readonly>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="bairro" class="form-label">
+                                    <i class="fas fa-home"></i> Bairro:
+                                </label>
+                                <input type="text" class="form-control" name="bairro" id="bairro" placeholder="Bairro" readonly>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="uf" class="form-label">
+                                    <i class="fas fa-map"></i> UF:
+                                </label>
+                                <input type="text" class="form-control" name="uf" id="uf" maxlength="2" placeholder="Estado" readonly>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="cep" class="form-label">
+                                    <i class="fas fa-mail-bulk"></i> CEP:
+                                </label>
+                                <input type="text" class="form-control" name="cep" id="cep" placeholder="XXXXX-XXX" readonly>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Adicionando FontAwesome para os ícones -->
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+
+                    <!-- Contatos -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="float-none w-auto px-3">Contatos</legend>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email:</label>
+                                <input type="email" class="form-control" name="email" id="email" placeholder="email@exemplo.com" readonly>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="telefone" class="form-label">Telefone:</label>
+                            <input type="text" class="form-control" name="telefone" id="telefone" placeholder="(XX) XXXXX-XXXX" readonly>
+                        </div>
+                    </fieldset>
+
+                    <!-- Informações Obrigatórias -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="float-none w-auto px-3 d-flex align-items-center">
+                            <i class="fas fa-exclamation-circle me-2"></i> Informações Obrigatórias
+                        </legend>
+                        <div class="mb-3">
+                                <label for="matriz_filial" class="form-label">
+                                    <i class="fas fa-user-check me-2"></i>Cadastrar na Rise Matriz ou Filial?
+                                </label>
+                                <select class="form-control" id="matriz_filial" name="matriz_filial" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="matriz">Matriz</option>
+                                    <option value="filial">Filial</option>
+                                </select>
+                            </div>
+                        <div class="row">
+                            <div class="mb-3">
+                                <label for="cliente_tambem" class="form-label">
+                                    <i class="fas fa-user-check me-2"></i> É Cliente Também?
+                                </label>
+                                <select class="form-control" id="cliente_tambem" name="cliente_tambem" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="Sim">Sim</option>
+                                    <option value="Não">Não</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email_contato" class="form-label">
+                                    <i class="fas fa-envelope me-2"></i> Digite o E-mail para contato:
+                                </label>
+                                <input type="email" class="form-control" id="email_contato" name="email_contato"
+                                    placeholder="teste@exemplo.com" required>
+                                <small class="text-muted">Digite um e-mail válido, como teste@exemplo.com</small>
+                                <div id="email_error" style="color: red; display: none;">E-mail inválido. Por favor, insira um e-mail válido.</div>
+                            </div>
+                             <div class="mb-3">
+                                <label for="email_contato2" class="form-label">
+                                    <i class="fas fa-envelope me-2"></i> Digite um segundo E-mail para contato:
+                                </label>
+                                <input type="email" class="form-control" id="email_contato2" name="email_contato2"
+                                    placeholder="teste@exemplo.com" required>
+                                <small class="text-muted">Digite um e-mail válido, como teste@exemplo.com</small>
+                                <div id="email_error2" style="color: red; display: none;">E-mail inválido. Por favor, insira um e-mail válido.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="telefone_contato" class="form-label">
+                                    <i class="fas fa-phone me-2"></i> Digite o telefone para contato:
+                                </label>
+                                <input type="text" class="form-control" id="telefone_contato" name="telefone_contato" required>
+                                <small class="text-muted">Formato: (XX) XXXXX-XXXX ou (XX) XXXX-XXXX</small>
+                                <div id="telefone_error" style="color: red; display: none;">Telefone inválido. Use o formato correto.</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="contato_pessoa" class="form-label">
+                                    <i class="fas fa-user me-2"></i> Nome para contato:
+                                </label>
+                                <input type="text" step="0.01" class="form-control" id="contato_pessoa" name="contato_pessoa" required>
+                            </div>
+
+
+                     <!-- Informações Bancárias -->
+                        <fieldset class="border p-4 mb-4 rounded shadow-sm bg-light">
+                            <legend class="float-none w-auto px-3 fw-bold text-primary">
+                                <i class="fas fa-university"></i> Informações Bancárias
+                            </legend>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                <label for="banco" class="form-label">Selecione o Banco:</label>
+                                <select class="form-control" id="banco" name="banco" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="Asaas">ASAAS GESTÃO FINANCEIRA INSTITUIÇÃO DE PAGAMENTO S.A.</option>
+                                    <option value="Arbi">BANCO ARBI S.A.</option>
+                                    <option value="Banrisul">BANCO BANRISUL</option>
+                                    <option value="BNB">Banco BNB</option>
+                                    <option value="C6">BANCO C6 S.A</option>
+                                    <option value="Siccob">BANCO COOPERATIVO SICCOB S.A</option>
+                                    <option value="Cora">BANCO CORA SCD S.A</option>
+                                    <option value="Daycoval">BANCO DAYCOVAL</option>
+                                    <option value="Brasil">BANCO DO BRASIL</option>
+                                    <option value="Sicredi">BANCO SICREDI</option>
+                                    <option value="Votorantim">BANCO VOTORANTIM</option>
+                                    <option value="Intermedium">BANCON INTERMEDIUM</option>
+                                    <option value="Bonsucesso">BONSUCESSO</option>
+                                    <option value="Bradesco">BRADESCO</option>
+                                    <option value="BTG">BTG PACTUAL</option>
+                                    <option value="Caixa">CAIXA ECONÔMICA FEDERAL</option>
+                                    <option value="Caixas">CAIXAS</option>
+                                    <option value="Ebank">EBANK</option>
+                                    <option value="HSBC">HSBC</option>
+                                    <option value="Itau">ITAÚ</option>
+                                    <option value="MP">MERCADO PAGO</option>
+                                    <option value="Nubank">NU PAGAMENTOS S.A. - INSTITUICAO DE PAGAMENTO</option>
+                                    <option value="Redecard">REDECARD</option>
+                                    <option value="Santander">SANTANDER</option>
+                                    <option value="Shoppe">SHOPPE</option>
+                                    <option value="Silicon">SILICON VALLEY BANK</option>
+                                    <option value="Stone">STONE</option>
+                                    <option value="Sicredi">Sicredi</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="agencia" class="form-label">
+                                    <i class="fas fa-list-ol"></i> N° Agência
+                                </label>
+                                <input type="text" class="form-control" id="agencia" name="agencia" required placeholder="Ex: 1234">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="n_conta" class="form-label">
+                                    <i class="fas fa-credit-card"></i> N° Conta
+                                </label>
+                                <input type="text" class="form-control" id="n_conta" name="n_conta" required placeholder="Ex: 000123-4">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="tipo_conta" class="form-label">
+                                    <i class="fas fa-wallet"></i> Tipo de Conta:
+                                </label>
+                                <select class="form-control" id="tipo_conta" name="tipo_conta" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="Poupanca">Conta Poupança</option>
+                                    <option value="Corrente">Conta Corrente</option>
+                                </select>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Adicionando FontAwesome para os ícones -->
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+                            <script>
+                                document.getElementById("email_contato").addEventListener("input", function() {
+                                    var emailInput = this.value;
+                                    var emailError = document.getElementById("email_error");
+                                    var emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+                                    if (!emailRegex.test(emailInput)) {
+                                        emailError.style.display = "block";
+                                        this.setCustomValidity("E-mail inválido");
+                                    } else {
+                                        emailError.style.display = "none";
+                                        this.setCustomValidity("");
+                                    }
+                                });
+
+
+                                document.getElementById("email_contato2").addEventListener("input", function() {
+                                    var emailInput = this.value;
+                                    var emailError = document.getElementById("email_error2");
+                                    var emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+                                    if (!emailRegex.test(emailInput)) {
+                                        emailError.style.display = "block";
+                                        this.setCustomValidity("E-mail inválido");
+                                    } else {
+                                        emailError.style.display = "none";
+                                        this.setCustomValidity("");
+                                    }
+                                });
+                            </script>
+
+                            <script>
+                                document.getElementById("telefone_contato").addEventListener("input", function (e) {
+                                    var telefoneInput = e.target;
+                                    var telefoneError = document.getElementById("telefone_error");
+
+                                    // Remove tudo que não for número
+                                    var v = telefoneInput.value.replace(/\D/g, "");
+
+                                    if (v.length > 10) {
+                                        v = v.replace(/^(\d{2})(\d{5})(\d{4})/, "($1) $2-$3"); // Celular
+                                    } else if (v.length === 10) {
+                                        v = v.replace(/^(\d{2})(\d{4})(\d{4})/, "($1) $2-$3"); // Fixo
+                                    }
+
+                                    telefoneInput.value = v;
+
+                                    // Regex para validar telefone fixo e celular
+                                    var telefoneRegex = /^\(\d{2}\) \d{4,5}-\d{4}$/;
+
+                                    if (!telefoneRegex.test(v)) {
+                                        telefoneError.style.display = "block";
+                                        telefoneInput.setCustomValidity("Telefone inválido");
+                                    } else {
+                                        telefoneError.style.display = "none";
+                                        telefoneInput.setCustomValidity("");
+                                    }
+                                });
+                            </script>
+                        </div>
+                    </fieldset>
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-success px-5">Cadastrar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+
+    <script>
+    document.getElementById('btn-consultar-cnpj').addEventListener('click', function () {
+        const cnpj = document.getElementById('cnpj').value.replace(/[^0-9]/g, '');
+        if (cnpj.length !== 14) {
+            alert('Digite um CNPJ válido.');
+            return;
+        }
+
+        // Primeira API: Consulta principal
+        fetch(`/consultar_cnpj/${cnpj}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                // Preenchendo os campos do formulário
+                document.getElementById('nome').value = data.nome || '';
+                document.getElementById('nome_fantasia').value = data.fantasia || '';
+                document.getElementById('atividade_principal').value = data.atividade_principal?.[0]?.code + ': ' + data.atividade_principal?.[0]?.text || '';
+                // Formatando Atividades Secundárias (Lista com Código + Descrição)
+            if (data.atividades_secundarias && data.atividades_secundarias.length > 0) {
+                const atividadesFormatadas = data.atividades_secundarias.map(a => `${a.code}: ${a.text}`).join('\n');
+                document.getElementById('atividades_secundarias').value = atividadesFormatadas;
+            } else {
+                document.getElementById('atividades_secundarias').value = '';
+            }
+
+                document.getElementById('logradouro').value = data.logradouro || '';
+                document.getElementById('numero').value = data.numero || '';
+                document.getElementById('complemento').value = data.complemento || '';
+                document.getElementById('municipio').value = data.municipio || '';
+                document.getElementById('bairro').value = data.bairro || '';
+                document.getElementById('uf').value = data.uf || ''; // UF preenchida aqui!
+                document.getElementById('cep').value = data.cep.replace('.', '').replace('-', '') || '';
+                document.getElementById('email').value = data.email || '';
+                document.getElementById('telefone').value = data.telefone || '';
+                document.getElementById('abertura').value = data.abertura || '';
+                document.getElementById('situacao').value = data.situacao || '';
+
+                // Obtendo UF para a segunda requisição
+                const uf = data.uf;
+                if (!uf) {
+                    alert("Não foi possível obter a UF.");
+                    return;
+                }
+
+                // Segunda API: Consulta Inscrição Estadual e Regime Tributário na open.cnpja.com
+                fetch(`/consultar_ie/${cnpj}/${uf}`) // Rota a ser implementada no backend Flask
+                    .then(response => response.json())
+                    .then(ieData => {
+                        if (ieData.error) {
+                            alert(ieData.error);
+                            return;
+                        }
+
+                        // Preenchendo os campos adicionais
+                        document.getElementById('inscricao_e').value = ieData.inscricao_estadual || '';
+                        document.getElementById('regime_tributario').value = ieData.regime_tributario || '';
+                    })
+                    .catch(error => {
+                        console.error('Erro ao consultar Inscrição Estadual:', error);
+                        alert('Erro ao consultar Inscrição Estadual e Regime Tributário.');
+                    });
+            })
+            .catch(error => {
+                console.error('Erro ao consultar CNPJ:', error);
+                alert('Ocorreu um erro ao consultar o CNPJ.');
+            });
+    });
+
+    // Botão limpar
+    document.getElementById('btn-limpar').addEventListener('click', function () {
+        document.getElementById('form-fornecedor').reset();
+        document.querySelectorAll('#form-fornecedor input[readonly], #form-fornecedor textarea[readonly]').forEach(field => {
+            field.value = '';
+        });
+    });
+</script>
+
+</body>
+</html>

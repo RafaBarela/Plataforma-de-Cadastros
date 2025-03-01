@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Carregar Dados do Arquivo NCM</h1>
+
+    <!-- Texto Fixo - Explicação sobre a funcionalidade do botão -->
+    <div class="alert alert-info text-center" role="alert">
+        <h4 class="alert-heading">Importante!</h4>
+        <p>O botão abaixo permite processar o arquivo de NCMs que já está disponível no sistema.</p>
+        <p><strong>Nota:</strong> Não é possível fazer upload de um novo arquivo, pois o arquivo é fixo. Caso haja necessidade de adicionar ou excluir dados, entre em contato com o <strong>Rafael</strong> para que as alterações sejam feitas.</p>
+        <hr>
+        <p class="mb-0">Se você tiver dúvidas ou precisar de assistência, não hesite em procurar o Rafael.</p>
+    </div>
+
+    <!-- Formulário com o botão de carregamento -->
+    <form method="POST" class="text-center">
+        <button type="submit" name="processar_arquivo" class="btn btn-primary btn-lg w-50" {% if not user_has_permission %}disabled{% endif %}>
+            Processar Arquivo
+        </button>
+        {% if not user_has_permission %}
+            <p class="text-danger mt-3">Apenas usuários autorizados podem processar o arquivo.</p>
+        {% endif %}
+    </form>
+
+    <!-- Divisor para separar seções -->
+    <hr class="my-5">
+
+    <!-- Seção de Edição Manual -->
+    <div class="card shadow-lg">
+        <div class="card-header bg-dark text-white">
+            <h2 class="text-center">Editar NCM Manualmente</h2>
+        </div>
+        <div class="card-body">
+            <!-- Formulário de Busca -->
+            <form method="POST" class="mb-4">
+                <div class="input-group">
+                    <input type="text" name="ncm_buscar" class="form-control" placeholder="Digite o código do NCM">
+                    <button type="submit" name="buscar_ncm" class="btn btn-info">Buscar</button>
+                </div>
+            </form>
+
+            {% if mensagem_erro %}
+                <div class="alert alert-danger text-center">{{ mensagem_erro }}</div>
+            {% endif %}
+
+            {% if ncm_atual %}
+            <!-- Formulário para Edição -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h3>NCM Encontrado: <strong>{{ ncm_atual.ncm }}</strong></h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <input type="hidden" name="ncm_id" value="{{ ncm_atual.id }}">
+                        <div class="form-group">
+                            <label for="nova_descricao" class="form-label">Descrição do NCM:</label>
+                            <input type="text" name="nova_descricao" class="form-control" value="{{ ncm_atual.descricao_ncm }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="nova_aliquota" class="form-label">Alíquota:</label>
+                            <input type="text" name="nova_aliquota" class="form-control" value="{{ ncm_atual.aliquota }}">
+                        </div>
+                        <button type="submit" name="editar_ncm" class="btn btn-success mt-4 w-100">
+                            Salvar Alterações
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+
+{% endblock %}

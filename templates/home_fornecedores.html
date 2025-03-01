@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="text-center">
+        <h1 class="display-4 text-dark">Bem-vindo ao Sistema de Cadastro de Fornecedores e Clientes</h1>
+        <p class="lead text-muted">Gerencie seus Fornecedores e Clientes de maneira prática e eficiente.</p>
+    </div>
+
+    <div class="row mt-5 justify-content-center">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow border-info">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-info">Cadastro de Fornecedor e Cliente</h5>
+                    <p class="card-text">Registre um novo Fornecedor ou Cliente com facilidade.</p>
+                    <a href="{{ url_for('cadastro_fornecedores') }}" class="btn btn-info">
+                        <i class="fas fa-user-plus me-2"></i>Cadastrar Fornecedor
+                    </a>
+                    <a href="{{ url_for('cadastro_clientes') }}" class="btn btn-info mt-3">
+                        <i class="fas fa-user-plus me-2"></i>Cadastrar Cliente
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow border-warning">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-warning">Visualizar Fornecedores</h5>
+                    <p class="card-text">Acesse todos os fornecedores cadastrados.</p>
+                    <a href="{{ url_for('listar_fornecedores') }}" class="btn btn-warning">
+                        <i class="fas fa-eye me-2"></i>Vsiualizar Fornecedores
+                    </a>
+                    <a href="{{ url_for('listar_clientes') }}" class="btn btn-warning mt-3">
+                        <i class="fas fa-eye me-2"></i>Visualizar Clientes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome (CDN) -->
+<link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    rel="stylesheet"
+/>
+
+<style>
+    body {
+        background-color: #f0f4f8;
+    }
+
+    .card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 15px;
+    }
+
+    .card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn {
+        transition: background-color 0.3s, color 0.3s;
+        border-radius: 25px;
+    }
+
+    .btn-info:hover {
+        background-color: #0d6efd;
+        color: #ffffff;
+    }
+
+    .btn-warning:hover {
+        background-color: #ffc107;
+        color: #000000;
+    }
+
+    body.dark-mode {
+        background-color: #181a1b;
+        color: #d1d1d1;
+    }
+
+    body.dark-mode .card {
+        background-color: #242526;
+        border-color: #3a3b3c;
+    }
+
+    body.dark-mode a {
+        color: #d1d1d1;
+    }
+
+    body.dark-mode .btn-info {
+        background-color: #0dcaf0;
+        color: #181a1b;
+    }
+
+    body.dark-mode .btn-warning {
+        background-color: #ffc107;
+        color: #181a1b;
+    }
+
+    body.dark-mode .btn-info:hover,
+    body.dark-mode .btn-warning:hover {
+        filter: brightness(1.2);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Cliente</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <a href="{{ url_for('home_fornecedores') }}" class="text-decoration-none">
+                <i class="bi bi-house-door h2 text-primary"></i>
+            </a>
+        </div>
+        <div class="card shadow-lg rounded">
+            <div class="container">
+            {% with mensagens = get_flashed_messages(with_categories=True) %}
+                {% if mensagens %}
+                    {% for categoria, mensagem in mensagens %}
+                        <div class="alert {{ categoria }}">
+                            {{ mensagem }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            </div>
+            <div class="card-header bg-primary text-white text-center">
+                <h3>Cadastrar Cliente</h3>
+            </div>
+            <div class="card-body">
+                <form id="form-clientes" method="POST" action="{{ url_for('cadastro_clientes') }}">
+
+                    <!-- Dados Cadastrais -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="float-none w-auto px-3">Dados Cadastrais</legend>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="cnpj" class="form-label">CNPJ:</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="cnpj" id="cnpj" placeholder="Digite o CNPJ" required>
+                                    <button type="button" id="btn-consultar-cnpj" class="btn btn-secondary">Consultar</button>
+                                    <button type="button" id="btn-limpar" class="btn btn-danger px-3">Limpar</button>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="situacao" class="form-label">Situação:</label>
+                                <input type="text" class="form-control" name="situacao" id="situacao" placeholder="Situação cadastral" readonly>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="abertura" class="form-label">Data de Abertura:</label>
+                            <input type="text" class="form-control" name="abertura" id="abertura" placeholder="Data de abertura" readonly>
+                        </div>
+                    </fieldset>
+
+                    <!-- Informações do Cliente -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="float-none w-auto px-3">Informações do Cliente</legend>
+                        <div class="mb-3">
+                            <label for="nome" class="form-label">Razão Social:</label>
+                            <input type="text" class="form-control" name="nome" id="nome" placeholder="Nome do Cliente" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="nome_fantasia" class="form-label">Nome Fantasia:</label>
+                            <input type="text" class="form-control" name="nome_fantasia" id="nome_fantasia" placeholder="Nome Fantasia" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="atividade_principal" class="form-label">Atividade Principal:</label>
+                            <textarea class="form-control" name="atividade_principal" id="atividade_principal" rows="2" placeholder="Descrição da atividade principal" readonly></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="atividades_secundarias" class="form-label">Atividades Secundárias:</label>
+                            <textarea class="form-control" name="atividades_secundarias" id="atividades_secundarias" rows="3" placeholder="Descrição das atividades secundárias" readonly></textarea>
+                        </div>
+                    </fieldset>
+
+                    <!-- Informações Fiscais -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="float-none w-auto px-3">Informações Fiscais</legend>
+                        <div class="mb-3">
+                            <label for="inscricao_e" class="form-label">Inscrição Estadual:</label>
+                            <input type="text" class="form-control" name="inscricao_e" id="inscricao_e" maxlength="9" placeholder="Inscrição Estadual" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="regime_tributario" class="form-label">Regime Tributário:</label>
+                            <input type="text" class="form-control" name="regime_tributario" id="regime_tributario" maxlength="7" placeholder="Regime Tributário" readonly>
+                        </div>
+                    </fieldset>
+
+                    <!-- Endereço -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="float-none w-auto px-3">Endereço</legend>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="logradouro" class="form-label">Logradouro:</label>
+                                <input type="text" class="form-control" name="logradouro" id="logradouro" placeholder="Rua, avenida, etc." readonly>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="numero" class="form-label">Número:</label>
+                                <input type="text" class="form-control" name="numero" id="numero" placeholder="Número" readonly>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="complemento" class="form-label">Complemento:</label>
+                                <input type="text" class="form-control" name="complemento" id="complemento" placeholder="Apto, bloco, etc." readonly>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="municipio" class="form-label">Município:</label>
+                                <input type="text" class="form-control" name="municipio" id="municipio" placeholder="Cidade" readonly>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="bairro" class="form-label">Bairro:</label>
+                                <input type="text" class="form-control" name="bairro" id="bairro" placeholder="Bairro" readonly>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="uf" class="form-label">UF:</label>
+                                <input type="text" class="form-control" name="uf" id="uf" maxlength="2" placeholder="Estado" readonly>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="cep" class="form-label">CEP:</label>
+                                <input type="text" class="form-control" name="cep" id="cep" placeholder="XXXXX-XXX" readonly>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Contatos -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="float-none w-auto px-3">Contatos</legend>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email:</label>
+                                <input type="email" class="form-control" name="email" id="email" placeholder="email@exemplo.com" readonly>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="telefone" class="form-label">Telefone:</label>
+                            <input type="text" class="form-control" name="telefone" id="telefone" placeholder="(XX) XXXXX-XXXX" readonly>
+                        </div>
+                    </fieldset>
+
+                    <!-- Informações Obrigatórias -->
+                    <fieldset class="border p-3 mb-4">
+                        <legend class="float-none w-auto px-3">Informações Obrigatórias</legend>
+                        <div class="row">
+                            <div class="mb-3">
+                                <label for="fornecedor_tambem" class="form-label">É Fornecedor Também?</label>
+                                <select class="form-control" id="fornecedor_tambem" name="fornecedor_tambem" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="Sim">Sim</option>
+                                    <option value="Não">Não</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email_contato" class="form-label">Digite o E-mail para contato:</label>
+                                <input type="email" class="form-control" id="email_contato" name="email_contato"
+                                    placeholder="teste@exemplo.com" required>
+                                <small class="text-muted">Digite um e-mail válido, como teste@exemplo.com</small>
+                                <div id="email_error" style="color: red; display: none;">E-mail inválido. Por favor, insira um e-mail válido.</div>
+                            </div>
+
+                            <script>
+                                document.getElementById("email_contato").addEventListener("input", function() {
+                                    var emailInput = this.value;
+                                    var emailError = document.getElementById("email_error");
+                                    var emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+                                    if (!emailRegex.test(emailInput)) {
+                                        emailError.style.display = "block";
+                                        this.setCustomValidity("E-mail inválido");
+                                    } else {
+                                        emailError.style.display = "none";
+                                        this.setCustomValidity("");
+                                    }
+                                });
+                            </script>
+                              <div class="mb-3">
+                                <label for="telefone_contato" class="form-label">Digite o telefone para contato:</label>
+                                <input type="text" class="form-control" id="telefone_contato" name="telefone_contato"
+                                     required>
+                                <small class="text-muted">Formato: (XX) XXXXX-XXXX ou (XX) XXXX-XXXX</small>
+                                <div id="telefone_error" style="color: red; display: none;">Telefone inválido. Use o formato correto.</div>
+                            </div>
+
+                            <script>
+                                document.getElementById("telefone_contato").addEventListener("input", function() {
+                                    var telefoneInput = this.value;
+                                    var telefoneError = document.getElementById("telefone_error");
+
+                                    // Regex para validar celular e telefone fixo
+                                    var telefoneRegex = /^\(\d{2}\) \d{4,5}-\d{4}$/;
+
+                                    if (!telefoneRegex.test(telefoneInput)) {
+                                        telefoneError.style.display = "block";
+                                        this.setCustomValidity("Telefone inválido");
+                                    } else {
+                                        telefoneError.style.display = "none";
+                                        this.setCustomValidity("");
+                                    }
+                                });
+
+                                // Máscara automática para facilitar a digitação
+                                document.getElementById("telefone_contato").addEventListener("input", function(e) {
+                                    var v = e.target.value.replace(/\D/g, ""); // Remove tudo que não for número
+                                    if (v.length > 10) {
+                                        v = v.replace(/^(\d{2})(\d{5})(\d{4})/, "($1) $2-$3"); // Celular
+                                    } else {
+                                        v = v.replace(/^(\d{2})(\d{4})(\d{4})/, "($1) $2-$3"); // Fixo
+                                    }
+                                    e.target.value = v;
+                                });
+                            </script>
+                            <div class="mb-3">
+                                <label for="contato_pessoa" class="form-label">Nome para contato::</label>
+                                <input type="text" step="0.01" class="form-control" id="contato_pessoa" name="contato_pessoa" required>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-success px-5">Cadastrar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+    document.getElementById('btn-consultar-cnpj').addEventListener('click', function () {
+        const cnpj = document.getElementById('cnpj').value.replace(/[^0-9]/g, '');
+        if (cnpj.length !== 14) {
+            alert('Digite um CNPJ válido.');
+            return;
+        }
+
+        // Primeira API: Consulta principal
+        fetch(`/consultar_cnpj/${cnpj}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                // Preenchendo os campos do formulário
+                document.getElementById('nome').value = data.nome || '';
+                document.getElementById('nome_fantasia').value = data.fantasia || '';
+                document.getElementById('atividade_principal').value = data.atividade_principal?.[0]?.code + ': ' + data.atividade_principal?.[0]?.text || '';
+                // Formatando Atividades Secundárias (Lista com Código + Descrição)
+            if (data.atividades_secundarias && data.atividades_secundarias.length > 0) {
+                const atividadesFormatadas = data.atividades_secundarias.map(a => `${a.code}: ${a.text}`).join('\n');
+                document.getElementById('atividades_secundarias').value = atividadesFormatadas;
+            } else {
+                document.getElementById('atividades_secundarias').value = '';
+            }
+
+                document.getElementById('logradouro').value = data.logradouro || '';
+                document.getElementById('numero').value = data.numero || '';
+                document.getElementById('complemento').value = data.complemento || '';
+                document.getElementById('municipio').value = data.municipio || '';
+                document.getElementById('bairro').value = data.bairro || '';
+                document.getElementById('uf').value = data.uf || ''; // UF preenchida aqui!
+                document.getElementById('cep').value = data.cep.replace('.', '').replace('-', '') || '';
+                document.getElementById('email').value = data.email || '';
+                document.getElementById('telefone').value = data.telefone || '';
+                document.getElementById('abertura').value = data.abertura || '';
+                document.getElementById('situacao').value = data.situacao || '';
+
+                // Obtendo UF para a segunda requisição
+                const uf = data.uf;
+                if (!uf) {
+                    alert("Não foi possível obter a UF.");
+                    return;
+                }
+
+                // Segunda API: Consulta Inscrição Estadual e Regime Tributário na open.cnpja.com
+                fetch(`/consultar_ie/${cnpj}/${uf}`) // Rota a ser implementada no backend Flask
+                    .then(response => response.json())
+                    .then(ieData => {
+                        if (ieData.error) {
+                            alert(ieData.error);
+                            return;
+                        }
+
+                        // Preenchendo os campos adicionais
+                        document.getElementById('inscricao_e').value = ieData.inscricao_estadual || '';
+                        document.getElementById('regime_tributario').value = ieData.regime_tributario || '';
+                    })
+                    .catch(error => {
+                        console.error('Erro ao consultar Inscrição Estadual:', error);
+                        alert('Erro ao consultar Inscrição Estadual e Regime Tributário.');
+                    });
+            })
+            .catch(error => {
+                console.error('Erro ao consultar CNPJ:', error);
+                alert('Ocorreu um erro ao consultar o CNPJ.');
+            });
+    });
+
+    // Botão limpar
+    document.getElementById('btn-limpar').addEventListener('click', function () {
+        document.getElementById('form-clientes').reset();
+        document.querySelectorAll('#form-clientes input[readonly], #form-clientes textarea[readonly]').forEach(field => {
+            field.value = '';
+        });
+    });
+</script>
+
+
+
+</body>
+</html>

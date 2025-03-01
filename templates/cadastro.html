@@ -1,0 +1,440 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <div class="container mt-3">
+        <div class="card w-50 mx-auto">
+            <div class="card-header bg-dark text-white">
+                <h3 class="mb-0 text-center">Cadastro de Solicitação</h3>
+            </div>
+            <div class="card-body">
+               <form method="POST" action="{{ url_for('cadastro') }}" enctype="multipart/form-data" class="needs-validation" novalidate id="solicitarForm">
+
+                    <div class="mb-3">
+                        <label for="familia" class="form-label">Família</label>
+                        <select class="form-control" id="familia" name="familia" required>
+                            <option value="">Selecione a família</option>
+                            <!-- As opções serão preenchidas dinamicamente pelo JavaScript -->
+                        </select>
+                        <div class="invalid-feedback">
+                            Este campo é obrigatório.
+                        </div>
+                    </div>
+
+
+                    <div id="subgrupo-materials" style="display: none;">
+                        <label for="subgrupo_material">Material Relacionado:</label>
+                        <select class="form-control" id="subgrupo_material" name="subgrupo_material">
+                            <option value="">Selecione o material relacionado</option>
+                            <!-- As opções serão preenchidas dinamicamente pelo JavaScript -->
+                        </select>
+                    </div>
+
+
+                    <!-- Campo de descrição com autocomplete -->
+                    <div class="mb-3">
+                        <label for="descricao_material" class="form-label">Descrição do Material ou Serviço</label>
+                        <input type="text" class="form-control" id="descricao_material" name="descricao_material" list="materiais_sugeridos" placeholder="Digite ou selecione um material..." required>
+                        <datalist id="materiais_sugeridos">
+                            <!-- As sugestões serão preenchidas dinamicamente pelo JavaScript -->
+                        </datalist>
+                    </div>
+
+
+
+                    <div class="form-group col-md-6">
+                        <label for="unidade_medida">Unidade de Estoque</label>
+                        <select class="form-control" id="unidade_medida" name="unidade_medida" required>
+                            <option value="" disabled selected>Selecione</option>
+                            {% for unidade in unidades_medida %}
+                                <option value="{{ unidade.nome }}">{{ unidade.nome }} ({{ unidade.descricao }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="ncm" class="form-label">NCM</label>
+                        <input type="text" class="form-control" id="ncm_input" placeholder="Pesquisar NCM" onkeyup="filterNCM()" aria-label="Pesquisar NCM">
+                        <select class="form-control" id="ncm" name="ncm" required size="5" style="display:none;">
+                            <option value="">Selecione o NCM</option>
+                            {% for ncm in ncms %}
+                                <option
+                                    value="{{ ncm.ncm }}"
+                                    data-aliquota="{{ ncm.aliquota }}"
+                                    {% if ncm.ncm|length != 8 %} disabled {% endif %}
+                                >
+                                    {{ ncm.ncm }} - {{ ncm.descricao_ncm }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="invalid-feedback">
+                            Este campo é obrigatório.
+                        </div>
+                    </div>
+
+
+                    <!-- Campo para exibir a alíquota selecionada -->
+                    <div class="mb-3">
+                        <label for="aliquota" class="form-label">Alíquota</label>
+                        <input type="text" class="form-control" id="aliquota_input" readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="projeto" class="form-label">Projeto</label>
+                        <input type="text" step="0.01" class="form-control" id="projeto" name="projeto" placeholder="Insira o nome do Projeto" required>
+                    </div>
+
+
+
+                   <div class="mb-3">
+                        <label for="centro_custo" class="form-label">Centro de Custo</label>
+                        <input type="number" class="form-control" id="centro_custo" name="centro_custo" placeholder="Insira o Centro de Custo" required min="0" max="5">
+                   </div>
+
+                   <script>
+                        document.getElementById("centro_custo").addEventListener("input", function () {
+                            if (this.value.length > 5) {
+                                this.value = this.value.slice(0, 5);
+                            }
+                        });
+                    </script>
+
+
+                    <div class="form-group mb-3">
+                        <label for="cat_produto">Categorização de Produto Acabado:</label>
+                        <select id="cat_produto" name="cat_produto" class="form-control" required>
+                            <option value="" disabled selected>Selecione</option>
+                            <option value="Personalizado">Personalizado</option>
+                            <option value="Estabilizado">Estabilizado</option>
+                        </select>
+                    </div>
+
+
+                   <div class="form-group mb-3">
+                        <label for="tipo_material">Origem do Material:</label>
+                        <select id="tipo_material" name="tipo_material" class="form-control" required>
+                            <option value="" disabled selected>Selecione</option>
+                            <option value="Nacional">Nacional</option>
+                            <option value="Importado">Importado</option>
+                        </select>
+                    </div>
+
+
+                   <div class="mb-3">
+                        <label for="projeto_ficticio" class="form-label">Material Fictício?</label>
+                        <select class="form-control" id="projeto_ficticio" name="projeto_ficticio" required>
+                            <option value="">Selecione...</option>
+                            <option value="Sim">Sim</option>
+                            <option value="Não">Não</option>
+                        </select>
+                    </div>
+
+
+
+                    <div class="text-center mt-4">
+                        <button type="button" class="btn btn-success btn-lg" id="solicitar_btn" disabled data-bs-toggle="modal" data-bs-target="#confirmationModal">Solicitar Cadastro</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmationModalLabel">Confirmação de Solicitação</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="font-size: 1.2rem; line-height: 1.5;">
+                <!-- Cada linha tem um campo seguido de seu respectivo checkbox -->
+                <div class="d-flex align-items-center mb-3">
+                    <p class="mb-0"><strong>Descrição do Material:</strong> <span id="confirm_descricao_material"></span></p>
+                    <input class="form-check-input ms-3" type="checkbox" id="check_descricao_material">
+                </div>
+
+                <div class="d-flex align-items-center mb-3">
+                    <p class="mb-0"><strong>Família:</strong> <span id="confirm_familia"></span></p>
+                    <input class="form-check-input ms-3" type="checkbox" id="check_familia">
+                </div>
+
+                <div class="d-flex align-items-center mb-3">
+                    <p class="mb-0"><strong>Unidade de Estoque:</strong> <span id="confirm_unidade_medida"></span></p>
+                    <input class="form-check-input ms-3" type="checkbox" id="check_unidade_medida">
+                </div>
+
+                <div class="d-flex align-items-center mb-3">
+                    <p class="mb-0"><strong>NCM:</strong> <span id="confirm_ncm"></span></p>
+                    <input class="form-check-input ms-3" type="checkbox" id="check_ncm">
+                </div>
+
+                <div class="d-flex align-items-center mb-3">
+                    <p class="mb-0"><strong>Origem do Material:</strong> <span id="confirm_tipo_material"></span></p>
+                    <input class="form-check-input ms-3" type="checkbox" id="check_tipo_material">
+                </div>
+
+                <div class="d-flex align-items-center mb-3">
+                    <p class="mb-0"><strong>Projeto:</strong> <span id="confirm_projeto"></span></p>
+                    <input class="form-check-input ms-3" type="checkbox" id="check_projeto">
+                </div>
+
+                <div class="d-flex align-items-center mb-3">
+                    <p class="mb-0"><strong>Material Fictício?</strong> <span id="confirm_projeto_ficticio"></span></p>
+                    <input class="form-check-input ms-3" type="checkbox" id="check_projeto_ficticio">
+                </div>
+
+
+                <div class="d-flex align-items-center mb-3">
+                    <p class="mb-0"><strong>Centro de Custo:</strong> <span id="confirm_centro_custo"></span></p>
+                    <input class="form-check-input ms-3" type="checkbox" id="check_centro_custo">
+                </div>
+
+
+                <div class="d-flex align-items-center mb-3">
+                    <p class="mb-0"><strong>Categorização de Produto Acabado:</strong> <span id="confirm_cat_produto"></span></p>
+                    <input class="form-check-input ms-3" type="checkbox" id="check_cat_produto">
+                </div>
+
+
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmSubmit" disabled>Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modal-lg {
+        max-width: 700px; /* Ajuste a largura do modal conforme necessário */
+    }
+
+
+    .form-check-input {
+        margin-left: auto; /* Move o checkbox para a extrema direita */
+    }
+</style>
+
+
+    <script>
+        // Validação do Bootstrap
+        (function () {
+            'use strict';
+            var forms = document.querySelectorAll('.needs-validation');
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
+
+        // Habilitar o botão de envio quando todos os campos obrigatórios estiverem preenchidos
+        const form = document.querySelector('form');
+        const submitButton = document.getElementById('solicitar_btn');
+
+
+        form.addEventListener('input', () => {
+            const requiredFields = form.querySelectorAll('input[required], select[required]');
+            const allRequiredFilled = Array.from(requiredFields).every(input => input.value.trim() !== '');
+            submitButton.disabled = !allRequiredFilled;
+        });
+
+        // Função para filtrar NCM
+        function filterNCM() {
+            const input = document.getElementById('ncm_input').value.toLowerCase();
+            const select = document.getElementById('ncm');
+            const options = select.options;
+
+            // Mostrar o select se houver entrada
+            if (input) {
+                select.style.display = 'block';
+            } else {
+                select.style.display = 'none';
+                return;
+            }
+
+            // Filtrar opções e ativar/desativar conforme o número de dígitos
+            for (let i = 1; i < options.length; i++) {
+                const option = options[i];
+                const text = option.text.toLowerCase();
+                const ncmValue = option.value.replace(/\./g, ''); // Remove os pontos para a verificação
+
+                // Exibe somente opções que contêm o texto digitado
+                option.style.display = text.includes(input) ? 'block' : 'none';
+
+                // Desabilita opções que não têm exatamente 8 dígitos
+                option.disabled = ncmValue.length !== 8;
+            }
+        }
+
+        // Seleciona o NCM ao clicar na opção e preenche a alíquota
+        document.getElementById('ncm').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            let aliquota = selectedOption.getAttribute('data-aliquota'); // Obtém a alíquota do NCM
+
+            // Verifica se a alíquota é numérica
+            if (!isNaN(aliquota)) {
+                // Converte para número e formata com 2 casas decimais
+                aliquota = parseFloat(aliquota).toFixed(2).replace('.', ',') + '%';
+            }
+
+            // Preenche o campo de texto com o NCM selecionado
+            document.getElementById('ncm_input').value = selectedOption.text;
+
+            // Preenche o campo de alíquota, mantendo o valor numérico formatado ou texto
+            document.getElementById('aliquota_input').value = aliquota;
+
+            // Oculta a lista após seleção
+            this.style.display = 'none';
+        });
+
+        // Preencher o modal com as informações do formulário
+        document.getElementById('solicitar_btn').addEventListener('click', function() {
+            document.getElementById('confirm_descricao_material').textContent = document.getElementById('descricao_material').value;
+
+            // Captura o texto visível da opção selecionada na 'Família'
+            const familiaSelect = document.getElementById('familia');
+            const selectedFamiliaText = familiaSelect.options[familiaSelect.selectedIndex].textContent;
+            document.getElementById('confirm_familia').textContent = selectedFamiliaText;
+
+
+            document.getElementById('confirm_unidade_medida').textContent = document.getElementById('unidade_medida').value;
+            document.getElementById('confirm_ncm').textContent = document.getElementById('ncm').value;
+            document.getElementById('confirm_projeto').textContent = document.getElementById('projeto').value;
+            document.getElementById('confirm_projeto_ficticio').textContent = document.getElementById('projeto_ficticio').options[document.getElementById('projeto_ficticio').selectedIndex].textContent;
+            document.getElementById('confirm_centro_custo').textContent = document.getElementById('centro_custo').value;
+            document.getElementById('confirm_cat_produto').textContent = document.getElementById('cat_produto').options[document.getElementById('cat_produto').selectedIndex].textContent;
+
+            const tipoMaterialSelect = document.getElementById('tipo_material');
+            const selectedTipoMaterialText = tipoMaterialSelect.options[tipoMaterialSelect.selectedIndex].textContent;
+            document.getElementById('confirm_tipo_material').textContent = selectedTipoMaterialText;
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const confirmButton = document.getElementById('confirmSubmit');
+            const checkboxes = document.querySelectorAll('.form-check-input');
+            const form = document.getElementById('solicitarForm');
+            const familiaSelect = document.getElementById('familia');
+            const subgrupoMaterials = document.getElementById('subgrupo-materials');
+            const subgrupoMaterialSelect = document.getElementById('subgrupo_material');
+            const materiaisSugeridos = document.getElementById('materiais_sugeridos');
+            const descricaoMaterialInput = document.getElementById('descricao_material');
+            let isSubmitting = false;
+
+
+            // Habilitar o botão "Confirmar" quando todos os checkboxes forem marcados
+            checkboxes.forEach(function (checkbox) {
+                checkbox.addEventListener('change', function () {
+                    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                    confirmButton.disabled = !allChecked;
+                });
+            });
+
+
+            // Evento ao clicar no botão de confirmar
+            confirmButton.addEventListener('click', function () {
+                if (isSubmitting) return; // Evita submissões múltiplas
+                isSubmitting = true; // Define como "já submetendo"
+                confirmButton.disabled = true; // Desabilita o botão
+
+                // Dispara o e-mail de notificação
+                fetch('/enviar_email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Notificação enviada com sucesso!');
+                        } else {
+                            alert('Erro ao enviar notificação.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro:', error);
+                        alert('Erro ao enviar notificação.');
+                    })
+                    .finally(() => {
+                        // Submete o formulário após a conclusão do fetch
+                        form.submit();
+                    });
+            });
+
+
+            // Função para carregar famílias na inicialização
+            function carregarFamilias() {
+                fetch('/get_familias')
+                    .then(response => response.json())
+                    .then(familias => {
+                        familias.forEach(familia => {
+                            const option = document.createElement('option');
+                            option.value = familia.id;
+                            option.textContent = familia.nome;
+                            familiaSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Erro ao carregar famílias:', error));
+            }
+
+
+            // Função para carregar materiais com base na família selecionada
+            function carregarMateriais(familiaId) {
+                fetch(`/get_materiais/${familiaId}`)
+                    .then(response => response.json())
+                    .then(materiais => {
+                        subgrupoMaterialSelect.innerHTML = '<option value="">Selecione o material relacionado</option>';
+                        materiais.forEach(material => {
+                            const option = document.createElement('option');
+                            option.value = material.descricao;
+                            option.textContent = material.descricao;
+                            subgrupoMaterialSelect.appendChild(option);
+                        });
+                        subgrupoMaterials.style.display = 'block';
+                    })
+                    .catch(error => console.error('Erro ao carregar materiais:', error));
+            }
+
+
+            // Evento para carregar materiais ao selecionar uma família
+            familiaSelect.addEventListener('change', function () {
+                const familiaId = this.value;
+                descricaoMaterialInput.value = ''; // Limpa o campo de descrição
+                if (familiaId) {
+                    carregarMateriais(familiaId);
+                } else {
+                    subgrupoMaterials.style.display = 'none'; // Oculta o subgrupo se nenhuma família for selecionada
+                }
+            });
+
+
+
+            // Quando um material é selecionado, preenche o campo de descrição
+            subgrupoMaterialSelect.addEventListener('change', function () {
+                descricaoMaterialInput.value = this.value;
+            });
+
+            // Controle da exibição do subgrupo ao digitar manualmente
+            descricaoMaterialInput.addEventListener('input', function () {
+                if (this.value.length > 0) {
+                    subgrupoMaterials.style.display = 'none';
+                } else if (familiaSelect.value) {
+                    subgrupoMaterials.style.display = 'block';
+                }
+            });
+
+            // Inicializa carregando as famílias
+            carregarFamilias();
+        });
+
+
+    </script>
+{% endblock %}

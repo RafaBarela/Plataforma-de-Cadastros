@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Relatórios de RNCs</h1>
+
+   <div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+        <i class="fas fa-filter"></i> Filtros
+    </div>
+    <div class="card-body">
+        <form method="get" action="{{ url_for('relatorios') }}">
+            <div class="row g-3 align-items-center">
+                <!-- Cliente -->
+                <div class="col-md-3">
+                    <label for="cliente" class="form-label"><i class="fas fa-user"></i> Cliente:</label>
+                    <select class="form-select form-select-sm" id="cliente" name="cliente_id" onchange="this.form.submit()">
+                        <option value="todos" {% if not cliente_selecionado %}selected{% endif %}>Todos</option>
+                        {% for cliente in clientes %}
+                        <option value="{{ cliente.id }}" {% if cliente_selecionado and cliente.id == cliente_selecionado.id %}selected{% endif %}>
+                            {{ cliente.nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Tipo de Problema -->
+                <div class="col-md-3">
+                    <label for="tipo_problema" class="form-label"><i class="fas fa-exclamation-triangle"></i> Problema:</label>
+                    <select class="form-select form-select-sm" id="tipo_problema" name="tipo_problema_id" onchange="this.form.submit()">
+                        <option value="todos" {% if not tipo_problema_selecionado %}selected{% endif %}>Todos</option>
+                        {% for problema in tipos_problema %}
+                        <option value="{{ problema.id }}" {% if tipo_problema_selecionado and problema.id == tipo_problema_selecionado.id %}selected{% endif %}>
+                            {{ problema.nome }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Data Início -->
+                <div class="col-md-3">
+                    <label for="data_inicio" class="form-label"><i class="fas fa-calendar-alt"></i> Data Início:</label>
+                    <input type="date" class="form-control form-control-sm" id="data_inicio" name="data_inicio"
+                           value="{{ request.args.get('data_inicio', '') }}" onchange="this.form.submit()">
+                </div>
+
+                <!-- Data Fim -->
+                <div class="col-md-3">
+                    <label for="data_fim" class="form-label"><i class="fas fa-calendar-alt"></i> Data Fim:</label>
+                    <input type="date" class="form-control form-control-sm" id="data_fim" name="data_fim"
+                           value="{{ request.args.get('data_fim', '') }}" onchange="this.form.submit()">
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+    <div class="d-flex justify-content-start align-items-start flex-wrap" style="gap: 1rem;">
+        <!-- Card do Impacto Financeiro -->
+        <div class="card text-white shadow-sm rounded mb-3" style="width: 18rem; background: linear-gradient(135deg, #007bff, #6610f2);">
+            <div class="card-body text-center">
+                <h6 class="card-title font-weight-bold">Impacto Financeiro Total</h6>
+                <p class="card-text display-6">
+                    R$ {{ "{:,.2f}".format(impacto_financeiro_total).replace(",", "X").replace(".", ",").replace("X", ".") }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Card do Número Total de RNCs -->
+        <div class="card text-white shadow-sm rounded mb-3" style="width: 18rem; background: linear-gradient(135deg, #28a745, #20c997);">
+            <div class="card-body text-center">
+                <h6 class="card-title font-weight-bold">Número Total de RNCs</h6>
+                <p class="card-text display-6">
+                    {{ numero_total_rncs }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico de Impacto Financeiro por Cliente -->
+    <div id="graficoFinanceiro" class="grafico-com-sombra mb-5"></div>
+
+    <!-- Gráfico de Pizza -->
+    <div id="graficoPizza" class="grafico-com-sombra"></div>
+
+    <!-- Gráfico de Barras -->
+    <div id="graficoBarras" class="mb-5"></div>
+</div>
+
+
+<script src="https://cdn.plot.ly/plotly-2.24.2.min.js"></script>
+
+<script>
+    // Dados para o gráfico de pizza
+    const labelsPizza = {{ labels_pizza | tojson }};
+    const valuesPizza = {{ values_pizza | tojson }};
+
+    const dataPizza = [{
+    labels: labelsPizza,
+    values: valuesPizza,
+    type: 'pie',
+    textinfo: 'percent',
+    textposition: 'inside',
+    insidetextfont: {
+        color: '#FFFFFF', // Define a cor branca para o texto dentro das fatias
+        size: 14 // Ajusta o tamanho do texto
+    },
+    pull: [0.05, 0.1, 0.15, 0],
+    marker: {
+        line: {
+            color: '#000', // Cor das bordas das fatias
+            width: 1 // Espessura das bordas
+        }
+    }
+}];
+
+    const layoutPizza = {
+        title: 'RNCs por Tipo de Problema'
+    };
+
+    Plotly.newPlot('graficoPizza', dataPizza, layoutPizza);
+
+    // Dados para o gráfico de barras
+    const labelsBarras = {{ labels_barras | tojson }};
+    const valuesBarras = {{ values_barras | tojson }};
+
+    const dataBarras = [{
+        x: labelsBarras,
+        y: valuesBarras,
+        type: 'bar'
+    }];
+
+    const layoutBarras = {
+        title: 'RNCs por Cliente',
+        xaxis: { title: 'Clientes' },
+        yaxis: { title: 'Quantidade de RNCs' },
+        showticklabels: false
+    };
+
+    Plotly.newPlot('graficoBarras', dataBarras, layoutBarras);
+
+
+
+    // Dados para o gráfico de impacto financeiro por cliente
+    const labelsFinanceiro = {{ labels_financeiro | tojson }};
+    const valuesFinanceiro = {{ values_financeiro | tojson }};
+
+    const dataFinanceiro = [{
+        x: labelsFinanceiro,
+        y: valuesFinanceiro,
+        type: 'bar',
+        marker: { color: '#6610f2' },
+        text: valuesFinanceiro.map(value => `R$ ${value.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`),
+        textposition: 'auto'
+    }];
+
+    const layoutFinanceiro = {
+        title: 'Impacto Financeiro por Cliente',
+        xaxis: { title: 'Clientes' },
+        yaxis: {
+            title: 'Impacto Financeiro (R$)',
+            tickformat: ',.2f',
+            showticklabels: false  // Oculta os valores no eixo Y
+        },
+        margin: { t: 50, l: 50, r: 50, b: 100 }
+    };
+
+    Plotly.newPlot('graficoFinanceiro', dataFinanceiro, layoutFinanceiro);
+
+</script>
+
+
+
+<style>
+    .card {
+    border: none;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(90deg, #007bff, #0056b3);
+}
+
+.card-title {
+    font-size: 0.9rem;
+    color: #f8f9fa;
+}
+
+.card-text {
+    color: #f8f9fa;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+</style>
+{% endblock %}

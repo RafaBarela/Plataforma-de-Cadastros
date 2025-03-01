@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Lista de RNCs</h1>
+
+    <div class="mb-3">
+        <form method="get" action="{{ url_for('listar_rnc') }}" class="d-flex align-items-center">
+            <label for="status" class="me-2 fw-bold text-secondary">Status:</label>
+            <select name="status" id="status" class="form-select form-select-sm shadow-sm w-auto" onchange="this.form.submit()">
+                <option value="" {% if not status_filtro %}selected{% endif %}>Todos</option>
+                <option value="Pendente" {% if status_filtro == "Pendente" %}selected{% endif %}>Pendente</option>
+                <option value="Aprovado" {% if status_filtro == "Aprovado" %}selected{% endif %}>Aprovado</option>
+                <option value="Rejeitado" {% if status_filtro == "Rejeitada" %}selected{% endif %}>Rejeitada</option>
+            </select>
+        </form>
+    </div>
+
+
+
+
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>Nº</th>
+                <th>Nome</th>
+                <th>Cliente</th>
+                <th>Projeto</th>
+                <th>Centro de Custo</th>
+                <th>Impacto Financeiro</th>
+                 <th>Data</th>
+                <th>Status</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cadastro in cadastros %}
+            <tr>
+                <td>{{ cadastro.n_solicitacao }}</td>
+                <td>{{ cadastro.usuario.username }}</td>
+                <td>{{ cadastro.cliente }}</td>
+                <td>{{ cadastro.projeto }}</td>
+                <td>{{ cadastro.centro_custo }}</td>
+                <td>R$ {{ "{:,.2f}".format(cadastro.impacto_financeiro).replace(",", ".").replace(".", ",", 1) }}</td>
+                <td>{{ cadastro.data_rnc.strftime('%d/%m/%Y') }}</td>
+                <td>{{ cadastro.status_rnc }}</td>
+                <td>
+                    <!-- Botão Ver -->
+                    <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#verModal{{ cadastro.id }}">Ver</button>
+
+                    <!-- Botão Editar -->
+                    {% if current_user.role == 'admin' %}
+                        <button
+                            class="btn btn-warning btn-sm"
+                            data-toggle="modal"
+                            data-target="#editarModal{{ cadastro.id }}"
+                            {% if cadastro.status_rnc != 'Pendente' %} disabled {% endif %}>
+                            Editar
+                        </button>
+                    {% endif %}
+
+                    <!-- Botões Aprovar/Rejeitar -->
+                    {% if cadastro.status_rnc == 'Pendente' and current_user.role == 'admin' %}
+                    <form action="{{ url_for('aprovar_rnc', id=cadastro.id) }}" method="post" style="display: inline;">
+                        <button class="btn btn-success btn-sm">Aprovar</button>
+                    </form>
+                    <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#rejeitarModal{{ cadastro.id }}">
+                        Rejeitar
+                    </button>
+                    {% endif %}
+
+                    <!-- Modal de Rejeição -->
+                    <div class="modal fade" id="rejeitarModal{{ cadastro.id }}" tabindex="-1" role="dialog" aria-labelledby="rejeitarModalLabel{{ cadastro.id }}" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <form action="{{ url_for('rejeitar_rnc', id=cadastro.id) }}" method="post">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="rejeitarModalLabel{{ cadastro.id }}">Motivo da Rejeição</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="form-group">
+                                            <label for="motivo_rejeicao_{{ cadastro.id }}">Informe o motivo:</label>
+                                            <textarea class="form-control" id="motivo_rejeicao_{{ cadastro.id }}" name="motivo_rejeicao" rows="4" required></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                                        <button type="submit" class="btn btn-danger">Confirmar Rejeição</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </td>
+            </tr>
+
+            <!-- Modal Ver -->
+            <div class="modal fade" id="verModal{{ cadastro.id }}" tabindex="-1" role="dialog" aria-labelledby="verModalLabel{{ cadastro.id }}" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="verModalLabel{{ cadastro.id }}">Detalhes da RNC</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <p><strong>Cliente:</strong> {{ cadastro.cliente }}</p>
+                            <p><strong>Projeto:</strong> {{ cadastro.projeto }}</p>
+                            <p><strong>Centro de Custo:</strong> {{ cadastro.centro_custo }}</p>
+                            <p><strong>Impacto no Produto:</strong> {{ cadastro.impacto_produto }}</p>
+                            <p><strong>Impacto na Entrega:</strong> {{ cadastro.impacto_entrega }}</p>
+                            <p><strong>Impacto na Percepção Cliente:</strong> {{ cadastro.impacto_percepcao }}</p>
+                            <p><strong>Tipo do Problema:</strong> {{ cadastro.tipo_problema.nome }}</p>
+                            <p><strong>Impacto Financeiro:</strong> R$ {{ "{:,.2f}".format(cadastro.impacto_financeiro).replace(",", "X").replace(".", ",").replace("X", ".") }}</p>
+                            <p><strong>Ordem de Compra:</strong> {{ cadastro.oc }}</p>
+
+                            {% if cadastro.plano_acao %}
+                            <p><strong>Plano de Ação:</strong> {{ cadastro.plano_acao }}</p>
+                            {% endif %}
+
+                            {% if cadastro.solicitante %}
+                            <p><strong>Solicitante:</strong> {{ cadastro.solicitante }}</p>
+                            {% endif %}
+
+                            <p><strong>Descrição RNC:</strong> {{ cadastro.descricao_nc }}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+           <!-- Modal Editar -->
+            {% if current_user.role == 'admin' %}
+            <div class="modal fade" id="editarModal{{ cadastro.id }}" tabindex="-1" role="dialog" aria-labelledby="editarModalLabel{{ cadastro.id }}" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <form method="POST" action="{{ url_for('editar_rnc', id=cadastro.id) }}">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editarModalLabel{{ cadastro.id }}">Editar RNC</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label for="solicitante">Solicitante</label>
+                                    <select class="form-control" id="solicitante" name="solicitante" required>
+                                        <option value="">Selecione um solicitante</option>
+                                        {% for usuario in usuarios %}
+                                            <option value="{{ usuario.username }}" {% if cadastro.solicitante == usuario.username %}selected{% endif %}>
+                                                {{ usuario.username }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="plano_acao">Plano de Ação</label>
+                                    <textarea class="form-control" id="plano_acao" name="plano_acao" rows="4" required>{{ cadastro.plano_acao }}</textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">Salvar</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+
+
+<script>
+    document.querySelectorAll('.btn-editar').forEach(button => {
+    button.addEventListener('click', function () {
+        const rncId = this.dataset.id;
+
+        fetch(`/ver_rnc/${rncId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Preenche os campos no modal de edição
+                document.getElementById('editarRncId').value = rncId;
+                document.getElementById('editarSolicitante').value = data.solicitante || '';
+                document.getElementById('editarPlanoAcao').value = data.plano_acao || '';
+                const editarModal = new bootstrap.Modal(document.getElementById(`editarModal${rncId}`));
+                editarModal.show();
+            });
+    });
+});
+
+// Evento para submeter o formulário de edição
+document.querySelectorAll('.editar-form').forEach(form => {
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const rncId = this.dataset.id; // Recupera o ID da RNC
+        const formData = new FormData(this);
+
+        fetch(`/editar_rnc/${rncId}`, {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro ao atualizar os dados.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert(data.message);
+                location.reload(); // Recarrega a página após a atualização
+            })
+            .catch(error => {
+                console.error(error);
+                alert('Erro ao atualizar os dados.');
+            });
+    });
+});
+
+</script>
+
